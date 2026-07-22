@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Estelamaris — Programa de Fidelidade 🌟
 
-## Getting Started
+Este é o aplicativo de **Programa de Pontos e Fidelidade** desenvolvido para a **Farmácia Estelamaris**. Através desta plataforma, os clientes da farmácia podem enviar suas notas fiscais, acumular pontos com base no valor de suas compras e trocar esses pontos por descontos e recompensas exclusivas.
 
-First, run the development server:
+## 🚀 Como funciona?
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+O sistema foi arquitetado para ser simples para o cliente e automatizado para a farmácia:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **Envio da Nota**: O cliente tira uma foto da nota fiscal ou envia o arquivo direto pelo app.
+2. **Leitura via Inteligência Artificial**: Uma automação (via **n8n** conectada a um Webhook do banco) captura a imagem e utiliza a **Groq (Visão/IA)** para ler automaticamente o valor (R$) da compra.
+3. **Crédito de Pontos**: Os pontos são calculados através de uma tabela de parâmetros dinâmicos (ex: R$ 1 = 1 ponto) multiplicados pelo nível de fidelidade do cliente (Bronze, Prata, Ouro).
+4. **Resgate**: O cliente escolhe uma recompensa no catálogo, o que gera um código único e QR Code.
+5. **Frente de Caixa (Admin)**: O cliente mostra o código para o atendente. O atendente, logado no painel administrativo restrito, dá baixa no código e aplica o desconto na compra em tempo real.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tecnologias Utilizadas
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Este projeto utiliza uma stack moderna com as melhores ferramentas disponíveis:
 
-## Learn More
+- **[Next.js 15 (App Router)](https://nextjs.org/)**: Framework React SSR para melhor performance e SEO.
+- **[Tailwind CSS v4](https://tailwindcss.com/)**: Estilização altamente customizada.
+- **[Supabase](https://supabase.com/)**: Backend as a Service.
+  - **PostgreSQL**: Banco de dados relacional (com funções SQL, Triggers e RLS).
+  - **Supabase Auth**: Autenticação de usuários.
+  - **Supabase Storage**: Armazenamento seguro de fotos de cupons fiscais em Buckets privados.
+- **[n8n](https://n8n.io/)**: Ferramenta de automação de fluxo de trabalho para plugar a IA no banco de dados.
 
-To learn more about Next.js, take a look at the following resources:
+## 🛡️ Segurança e Permissões
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Toda a lógica sensível do sistema está duplamente protegida (Database + Servidor):
+- **Row Level Security (RLS)**: Usuários comuns só conseguem ler e escrever na tabela de "pontos", "notas" e "resgates" onde o `user_id` é o deles. O usuário administrador (`ryan@gmail.com`) possui uma política que ignora o RLS e lhe garante acesso global ao sistema.
+- **Server Actions Seguras**: Todo o painel administrativo (`/admin`) utiliza um client elevado (Service Role) e a camada de middleware do Next.js impede a entrada não autorizada.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 💻 Rodando Localmente
 
-## Deploy on Vercel
+Para rodar este ambiente de desenvolvimento na sua máquina:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Instale as dependências:
+   ```bash
+   npm install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. Configure suas variáveis de ambiente copiando o template (`.env.example` -> `.env.local`) e inserindo suas chaves do Supabase.
+
+3. Execute o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+Acesse [http://localhost:3000](http://localhost:3000) no seu navegador e você verá o app rodando!
+
+---
+
+> Desenvolvido com carinho para alavancar e modernizar as vendas da Farmácia Estelamaris.
