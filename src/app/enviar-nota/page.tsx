@@ -144,17 +144,18 @@ export default function EnviarNotaPage() {
 
       if (uploadError) throw new Error("Falha ao enviar imagem");
 
+      // NÃO enviar 'status': o cliente só tem grant de INSERT em (user_id, storage_path).
+      // O default do banco já define status='pendente'.
       const { data: receiptData, error: dbError } = await supabase
         .from("receipts")
         .insert({
           user_id: userId,
-          status: "pendente",
           storage_path: storagePath,
         })
         .select("id")
         .single();
 
-      if (dbError) throw new Error("Falha ao registrar nota");
+      if (dbError) throw new Error(dbError.message || "Falha ao registrar nota");
 
       setReceiptId(receiptData.id);
       setStatus("processing");
