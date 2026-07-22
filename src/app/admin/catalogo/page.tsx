@@ -28,12 +28,15 @@ type Reward = {
   ativo: boolean;
 };
 
+const inputCls =
+  "mt-1 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[13px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20";
+const labelCls = "text-[12px] font-semibold text-muted";
+
 export default function AdminCatalogoPage() {
   const supabase = createClient();
   const [config, setConfig] = useState<Config | null>(null);
   const [rewards, setRewards] = useState<Reward[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [refreshKey, setRefreshKey] = useState(0);
 
   const configActionWrapped = async (prev: AdminFormState, formData: FormData) => {
@@ -70,42 +73,32 @@ export default function AdminCatalogoPage() {
       setRewards((rw ?? []) as Reward[]);
       setLoading(false);
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
   if (loading) {
     return (
-      <div className="animate-page-in py-12 text-center text-[14px] font-medium text-white/30">
-        Carregando...
-      </div>
+      <div className="py-12 text-center text-[14px] font-medium text-muted">Carregando…</div>
     );
   }
 
   return (
-    <div className="animate-page-in">
-      <h1 className="text-[24px] font-extrabold tracking-tight text-white">Catálogo</h1>
-      <p className="mt-1 text-[14px] font-medium text-white/40">
-        Parâmetros do programa e recompensas
-      </p>
+    <div>
+      <h1 className="text-[22px] font-extrabold tracking-tight text-ink sm:text-[24px]">Catálogo</h1>
+      <p className="mt-1 text-[14px] font-medium text-muted">Parâmetros do programa e recompensas</p>
 
-      {/* ── Config ── */}
-      <section className="mt-6 rounded-2xl border border-white/5 bg-white/[0.03] p-6">
-        <h2 className="text-[16px] font-bold text-white/80">Parâmetros de Pontos</h2>
+      {/* Config */}
+      <section className="glass mt-6 rounded-2xl p-4 shadow-soft sm:p-6">
+        <h2 className="text-[16px] font-bold text-ink">Parâmetros de pontos</h2>
 
-        {configState?.error && (
-          <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-[13px] font-medium text-red-400">
-            {configState.error}
-          </div>
-        )}
-        {configState?.ok && (
-          <div className="mt-3 rounded-xl bg-emerald-500/10 px-3 py-2 text-[13px] font-medium text-emerald-400">
-            {configState.message}
-          </div>
-        )}
+        {configState?.error && <Banner error>{configState.error}</Banner>}
+        {configState?.ok && <Banner>{configState.message}</Banner>}
 
         {config && (
-          <form action={configAction} className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <form action={configAction} className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             <ConfigField label="Pontos por R$" name="pontos_por_real" value={config.pontos_por_real} step="0.1" />
             <ConfigField label="Mult. Bronze" name="mult_bronze" value={config.mult_bronze} step="0.1" />
             <ConfigField label="Mult. Prata" name="mult_prata" value={config.mult_prata} step="0.1" />
@@ -117,74 +110,52 @@ export default function AdminCatalogoPage() {
               <button
                 type="submit"
                 disabled={configPending}
-                className="w-full rounded-xl bg-blue-500/80 py-3 text-[13px] font-bold text-white transition-colors hover:bg-blue-500 disabled:opacity-50"
+                className="w-full rounded-xl bg-blue py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-blue-bright disabled:opacity-50"
               >
-                {configPending ? "Salvando..." : "Salvar"}
+                {configPending ? "Salvando…" : "Salvar"}
               </button>
             </div>
           </form>
         )}
       </section>
 
-      {/* ── Rewards ── */}
+      {/* Rewards */}
       <section className="mt-8">
         <div className="flex items-center justify-between">
-          <h2 className="text-[16px] font-bold text-white/80">Recompensas</h2>
+          <h2 className="text-[16px] font-bold text-ink">Recompensas</h2>
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="rounded-xl bg-white/10 px-4 py-2 text-[13px] font-bold text-white/70 transition-colors hover:bg-white/15"
+            className="rounded-xl bg-ink px-4 py-2 text-[13px] font-bold text-white transition-colors hover:opacity-90"
           >
             {showCreateForm ? "Cancelar" : "+ Nova"}
           </button>
         </div>
 
-        {/* Create form */}
         {showCreateForm && (
-          <div className="mt-4 rounded-2xl border border-white/5 bg-white/[0.03] p-5">
-            {createState?.error && (
-              <div className="mb-3 rounded-xl bg-red-500/10 px-3 py-2 text-[13px] font-medium text-red-400">
-                {createState.error}
-              </div>
-            )}
-            {createState?.ok && (
-              <div className="mb-3 rounded-xl bg-emerald-500/10 px-3 py-2 text-[13px] font-medium text-emerald-400">
-                {createState.message}
-              </div>
-            )}
-            <form action={createAction} className="grid grid-cols-3 gap-4">
+          <div className="glass mt-4 rounded-2xl p-4 shadow-soft sm:p-5">
+            {createState?.error && <Banner error>{createState.error}</Banner>}
+            {createState?.ok && <Banner>{createState.message}</Banner>}
+            <form action={createAction} className="mt-1 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <label className="text-[12px] font-bold text-white/50">Título</label>
-                <input
-                  name="titulo"
-                  required
-                  className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[13px] font-bold text-white outline-none focus:border-white/20"
-                />
+                <label className={labelCls}>Título</label>
+                <input name="titulo" required className={inputCls} />
               </div>
               <div>
-                <label className="text-[12px] font-bold text-white/50">Descrição</label>
-                <input
-                  name="descricao"
-                  className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[13px] font-medium text-white outline-none focus:border-white/20"
-                />
+                <label className={labelCls}>Descrição</label>
+                <input name="descricao" className={inputCls} />
               </div>
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[12px] font-bold text-white/50">Custo (pts)</label>
-                  <input
-                    name="custo_pontos"
-                    type="number"
-                    min="1"
-                    required
-                    className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[13px] font-bold text-white outline-none focus:border-white/20"
-                  />
+                  <label className={labelCls}>Custo (pts)</label>
+                  <input name="custo_pontos" type="number" min="1" required className={inputCls} />
                 </div>
                 <div className="flex items-end">
                   <button
                     type="submit"
                     disabled={createPending}
-                    className="rounded-xl bg-emerald-500/80 px-5 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+                    className="rounded-xl bg-blue px-5 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-blue-bright disabled:opacity-50"
                   >
-                    {createPending ? "..." : "Criar"}
+                    {createPending ? "…" : "Criar"}
                   </button>
                 </div>
               </div>
@@ -192,7 +163,6 @@ export default function AdminCatalogoPage() {
           </div>
         )}
 
-        {/* Rewards list */}
         <div className="mt-4 space-y-2">
           {rewards.map((r) => (
             <RewardRow
@@ -207,12 +177,24 @@ export default function AdminCatalogoPage() {
             />
           ))}
           {rewards.length === 0 && (
-            <div className="py-8 text-center text-[13px] text-white/30">
+            <div className="py-8 text-center text-[13px] text-muted">
               Nenhuma recompensa cadastrada.
             </div>
           )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function Banner({ children, error }: { children: React.ReactNode; error?: boolean }) {
+  return (
+    <div
+      className={`mt-3 rounded-xl border px-3 py-2 text-[13px] font-bold ${
+        error ? "border-red/20 bg-red/8 text-red" : "border-blue/20 bg-blue/8 text-blue"
+      }`}
+    >
+      {children}
     </div>
   );
 }
@@ -230,15 +212,8 @@ function ConfigField({
 }) {
   return (
     <div>
-      <label className="text-[12px] font-bold text-white/50">{label}</label>
-      <input
-        name={name}
-        type="number"
-        step={step}
-        defaultValue={value}
-        required
-        className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-[14px] font-bold text-white outline-none focus:border-white/20"
-      />
+      <label className={labelCls}>{label}</label>
+      <input name={name} type="number" step={step} defaultValue={value} required className={inputCls} />
     </div>
   );
 }
@@ -269,44 +244,44 @@ function RewardRow({
   }, [toggleState?.ok, updateState?.ok]);
 
   return (
-    <div
-      className={`rounded-2xl border border-white/5 bg-white/[0.03] p-4 transition-colors ${!reward.ativo ? "opacity-50" : ""}`}
-    >
+    <div className={`glass rounded-2xl p-4 shadow-soft ${!reward.ativo ? "opacity-60" : ""}`}>
       {!editing ? (
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-[14px] font-bold text-white">{reward.titulo}</span>
+              <span className="truncate text-[14px] font-bold text-ink">{reward.titulo}</span>
               <span
-                className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold ${reward.ativo ? "bg-emerald-500/20 text-emerald-400" : "bg-white/10 text-white/30"}`}
+                className={`shrink-0 rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
+                  reward.ativo ? "bg-blue/10 text-blue" : "bg-ink/5 text-muted"
+                }`}
               >
                 {reward.ativo ? "ativa" : "inativa"}
               </span>
             </div>
             {reward.descricao && (
-              <div className="mt-0.5 text-[12px] text-white/40">{reward.descricao}</div>
+              <div className="mt-0.5 text-[12px] text-muted">{reward.descricao}</div>
             )}
           </div>
-          <div className="text-[15px] font-extrabold text-white/70">
+          <div className="text-[15px] font-extrabold text-ink sm:shrink-0">
             {reward.custo_pontos} pts
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 sm:shrink-0">
             <button
               onClick={onEdit}
-              className="rounded-xl bg-white/5 px-3 py-2 text-[12px] font-bold text-white/50 transition-colors hover:bg-white/10"
+              className="flex-1 rounded-xl border border-line bg-white px-3 py-2 text-[12px] font-bold text-muted transition-colors hover:bg-ink/5 sm:flex-none"
             >
               Editar
             </button>
-            <form action={toggleAction}>
+            <form action={toggleAction} className="flex-1 sm:flex-none">
               <input type="hidden" name="id" value={reward.id} />
               <input type="hidden" name="ativo" value={String(reward.ativo)} />
               <button
                 type="submit"
                 disabled={togglePending}
-                className={`rounded-xl px-3 py-2 text-[12px] font-bold transition-colors disabled:opacity-50 ${
+                className={`w-full rounded-xl px-3 py-2 text-[12px] font-bold transition-colors disabled:opacity-50 ${
                   reward.ativo
-                    ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                    : "bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20"
+                    ? "border border-red/20 bg-red/10 text-red hover:bg-red/20"
+                    : "bg-blue text-white hover:bg-blue-bright"
                 }`}
               >
                 {reward.ativo ? "Desativar" : "Ativar"}
@@ -315,53 +290,44 @@ function RewardRow({
           </div>
         </div>
       ) : (
-        <form action={updateAction} className="grid grid-cols-4 gap-3">
+        <form action={updateAction} className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <input type="hidden" name="id" value={reward.id} />
           {updateState?.error && (
-            <div className="col-span-4 rounded-xl bg-red-500/10 px-3 py-2 text-[13px] text-red-400">
+            <div className="rounded-xl border border-red/20 bg-red/8 px-3 py-2 text-[13px] font-bold text-red sm:col-span-2 lg:col-span-4">
               {updateState.error}
             </div>
           )}
           <div>
-            <label className="text-[11px] font-bold text-white/50">Título</label>
-            <input
-              name="titulo"
-              defaultValue={reward.titulo}
-              required
-              className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[13px] font-bold text-white outline-none"
-            />
+            <label className={labelCls}>Título</label>
+            <input name="titulo" defaultValue={reward.titulo} required className={inputCls} />
           </div>
           <div>
-            <label className="text-[11px] font-bold text-white/50">Descrição</label>
-            <input
-              name="descricao"
-              defaultValue={reward.descricao ?? ""}
-              className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[13px] font-medium text-white outline-none"
-            />
+            <label className={labelCls}>Descrição</label>
+            <input name="descricao" defaultValue={reward.descricao ?? ""} className={inputCls} />
           </div>
           <div>
-            <label className="text-[11px] font-bold text-white/50">Custo (pts)</label>
+            <label className={labelCls}>Custo (pts)</label>
             <input
               name="custo_pontos"
               type="number"
               min="1"
               defaultValue={reward.custo_pontos}
               required
-              className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-[13px] font-bold text-white outline-none"
+              className={inputCls}
             />
           </div>
           <div className="flex items-end gap-2">
             <button
               type="submit"
               disabled={updatePending}
-              className="rounded-xl bg-blue-500/80 px-4 py-2 text-[13px] font-bold text-white disabled:opacity-50"
+              className="flex-1 rounded-xl bg-blue px-4 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-blue-bright disabled:opacity-50"
             >
               Salvar
             </button>
             <button
               type="button"
               onClick={onEdit}
-              className="rounded-xl bg-white/5 px-4 py-2 text-[13px] font-bold text-white/50"
+              className="rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
             >
               ✕
             </button>

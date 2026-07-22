@@ -15,7 +15,14 @@ async function requireAdmin() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user || user.email !== "ryan@gmail.com") redirect("/login");
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("papel")
+    .eq("id", user.id)
+    .single();
+  if (!profile || profile.papel !== "admin") redirect("/");
 
   return user;
 }

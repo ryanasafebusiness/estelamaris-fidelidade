@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useState, useActionState, useEffect } from "react";
 import { adminApproveReceipt, adminRejectReceipt } from "@/app/actions/admin";
 import type { AdminFormState } from "@/app/actions/admin";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect } from "react";
 
 type Receipt = {
   id: string;
@@ -17,14 +16,12 @@ type Receipt = {
   ai_result: Record<string, unknown> | null;
   created_at: string;
   user_id: string;
-  profiles?: { nome: string | null; email?: string } | null;
+  profiles?: { nome: string | null } | null;
 };
 
 export default function AdminNotasPage() {
   const supabase = createClient();
-  const [filter, setFilter] = useState<"pendente" | "aprovada" | "rejeitada" | "todas">(
-    "pendente",
-  );
+  const [filter, setFilter] = useState<"pendente" | "aprovada" | "rejeitada" | "todas">("pendente");
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalReceipt, setModalReceipt] = useState<Receipt | null>(null);
@@ -41,10 +38,7 @@ export default function AdminNotasPage() {
         .select("*, profiles(nome)")
         .order("created_at", { ascending: false })
         .limit(100);
-
-      if (filter !== "todas") {
-        query = query.eq("status", filter);
-      }
+      if (filter !== "todas") query = query.eq("status", filter);
 
       const { data } = await query;
       if (cancelled) return;
@@ -52,7 +46,6 @@ export default function AdminNotasPage() {
       setReceipts(items);
       setLoading(false);
 
-      // Generate signed URLs for images
       const urls: Record<string, string> = {};
       for (const r of items) {
         if (r.storage_path) {
@@ -66,22 +59,11 @@ export default function AdminNotasPage() {
     }
 
     fetchReceipts();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter, refreshKey]);
-
-  const openApprove = (r: Receipt) => {
-    setModalReceipt(r);
-    setModalType("approve");
-  };
-  const openReject = (r: Receipt) => {
-    setModalReceipt(r);
-    setModalType("reject");
-  };
-  const closeModal = () => {
-    setModalReceipt(null);
-    setModalType(null);
-  };
 
   const filters: { key: typeof filter; label: string }[] = [
     { key: "pendente", label: "Pendentes" },
@@ -91,22 +73,18 @@ export default function AdminNotasPage() {
   ];
 
   return (
-    <div className="animate-page-in">
-      <h1 className="text-[24px] font-extrabold tracking-tight text-white">Notas</h1>
-      <p className="mt-1 text-[14px] font-medium text-white/40">
-        Moderação de notas fiscais
-      </p>
+    <div>
+      <h1 className="text-[22px] font-extrabold tracking-tight text-ink sm:text-[24px]">Notas</h1>
+      <p className="mt-1 text-[14px] font-medium text-muted">Moderação de notas fiscais</p>
 
-      {/* Filters */}
-      <div className="mt-5 flex gap-2">
+      {/* Filtros */}
+      <div className="no-scrollbar mt-5 flex gap-2 overflow-x-auto">
         {filters.map((f) => (
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`rounded-xl px-4 py-2 text-[13px] font-bold transition-colors ${
-              filter === f.key
-                ? "bg-white/10 text-white"
-                : "text-white/40 hover:bg-white/5 hover:text-white/60"
+            className={`shrink-0 rounded-full px-4 py-2 text-[13px] font-bold transition-colors ${
+              filter === f.key ? "bg-ink text-white" : "text-muted hover:bg-ink/5"
             }`}
           >
             {f.label}
@@ -114,105 +92,103 @@ export default function AdminNotasPage() {
         ))}
       </div>
 
-      {/* List */}
+      {/* Lista */}
       <div className="mt-5 space-y-3">
-        {loading && (
-          <div className="py-12 text-center text-[14px] font-medium text-white/30">
-            Carregando...
-          </div>
-        )}
-
-        {!loading && receipts.length === 0 && (
-          <div className="py-12 text-center text-[14px] font-medium text-white/30">
-            Nenhuma nota encontrada.
-          </div>
-        )}
+        {loading && <Empty>Carregando…</Empty>}
+        {!loading && receipts.length === 0 && <Empty>Nenhuma nota encontrada.</Empty>}
 
         {!loading &&
           receipts.map((r) => (
-            <div
-              key={r.id}
-              className="flex gap-4 rounded-2xl border border-white/5 bg-white/[0.03] p-4"
-            >
-              {/* Thumbnail */}
-              <div className="h-[80px] w-[60px] shrink-0 overflow-hidden rounded-xl bg-white/5">
-                {imageUrls[r.id] ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={imageUrls[r.id]}
-                    alt="Nota"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-[10px] text-white/20">
-                    sem img
+            <div key={r.id} className="glass rounded-2xl p-3 shadow-soft sm:p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="flex min-w-0 flex-1 gap-3">
+                  {/* Thumbnail */}
+                  <div className="h-[80px] w-[60px] shrink-0 overflow-hidden rounded-xl bg-ink/5">
+                    {imageUrls[r.id] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={imageUrls[r.id]}
+                        alt="Nota"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-[10px] text-muted">
+                        sem img
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={r.status} />
+                      <span className="truncate text-[13px] font-bold text-ink">
+                        {r.profiles?.nome || "—"}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-[12px] text-muted">
+                      {r.valor ? `R$ ${r.valor.toFixed(2)}` : "Valor não lido"} ·{" "}
+                      {r.pontos_gerados > 0 ? `${r.pontos_gerados} pts` : "—"} ·{" "}
+                      {new Date(r.created_at).toLocaleDateString("pt-BR")}
+                    </div>
+                    {r.estabelecimento && (
+                      <div className="mt-0.5 truncate text-[11px] text-muted">
+                        {r.estabelecimento}
+                      </div>
+                    )}
+                    {r.motivo_rejeicao && (
+                      <div className="mt-1 text-[11px] font-semibold text-red">
+                        Motivo: {r.motivo_rejeicao}
+                      </div>
+                    )}
+                    {r.ai_result && (
+                      <details className="mt-1">
+                        <summary className="cursor-pointer text-[11px] text-muted hover:text-ink">
+                          Ver dados da IA
+                        </summary>
+                        <pre className="mt-1 max-h-[120px] overflow-auto rounded-lg bg-ink/5 p-2 text-[10px] text-ink/70">
+                          {JSON.stringify(r.ai_result, null, 2)}
+                        </pre>
+                      </details>
+                    )}
+                  </div>
+                </div>
+
+                {/* Ações */}
+                {r.status === "pendente" && (
+                  <div className="flex gap-2 sm:shrink-0 sm:flex-col">
+                    <button
+                      onClick={() => {
+                        setModalReceipt(r);
+                        setModalType("approve");
+                      }}
+                      className="flex-1 rounded-xl bg-blue px-3 py-2 text-[12px] font-bold text-white transition-colors hover:bg-blue-bright"
+                    >
+                      Aprovar
+                    </button>
+                    <button
+                      onClick={() => {
+                        setModalReceipt(r);
+                        setModalType("reject");
+                      }}
+                      className="flex-1 rounded-xl border border-red/20 bg-red/10 px-3 py-2 text-[12px] font-bold text-red transition-colors hover:bg-red/20"
+                    >
+                      Rejeitar
+                    </button>
                   </div>
                 )}
               </div>
-
-              {/* Info */}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <StatusBadge status={r.status} />
-                  <span className="truncate text-[13px] font-bold text-white/70">
-                    {(r.profiles as { nome: string | null } | null)?.nome || "—"}
-                  </span>
-                </div>
-                <div className="mt-1 text-[12px] text-white/40">
-                  {r.valor ? `R$ ${r.valor.toFixed(2)}` : "Valor não lido"} ·{" "}
-                  {r.pontos_gerados > 0 ? `${r.pontos_gerados} pts` : "—"} ·{" "}
-                  {new Date(r.created_at).toLocaleDateString("pt-BR")}
-                </div>
-                {r.estabelecimento && (
-                  <div className="mt-0.5 truncate text-[11px] text-white/30">
-                    {r.estabelecimento}
-                  </div>
-                )}
-                {r.motivo_rejeicao && (
-                  <div className="mt-1 text-[11px] text-red-400">
-                    Motivo: {r.motivo_rejeicao}
-                  </div>
-                )}
-                {r.ai_result && (
-                  <details className="mt-1">
-                    <summary className="cursor-pointer text-[11px] text-white/25 hover:text-white/40">
-                      Ver dados IA
-                    </summary>
-                    <pre className="mt-1 max-h-[120px] overflow-auto rounded-lg bg-black/30 p-2 text-[10px] text-white/50">
-                      {JSON.stringify(r.ai_result, null, 2)}
-                    </pre>
-                  </details>
-                )}
-              </div>
-
-              {/* Actions */}
-              {r.status === "pendente" && (
-                <div className="flex shrink-0 flex-col gap-2">
-                  <button
-                    onClick={() => openApprove(r)}
-                    className="rounded-xl bg-emerald-500/20 px-3 py-2 text-[12px] font-bold text-emerald-400 transition-colors hover:bg-emerald-500/30"
-                  >
-                    Aprovar
-                  </button>
-                  <button
-                    onClick={() => openReject(r)}
-                    className="rounded-xl bg-red-500/20 px-3 py-2 text-[12px] font-bold text-red-400 transition-colors hover:bg-red-500/30"
-                  >
-                    Rejeitar
-                  </button>
-                </div>
-              )}
             </div>
           ))}
       </div>
 
-      {/* Modal */}
       {modalReceipt && modalType && (
         <Modal
           receipt={modalReceipt}
           type={modalType}
           onClose={() => {
-            closeModal();
+            setModalReceipt(null);
+            setModalType(null);
             setRefreshKey((k) => k + 1);
           }}
         />
@@ -221,15 +197,20 @@ export default function AdminNotasPage() {
   );
 }
 
+function Empty({ children }: { children: React.ReactNode }) {
+  return <div className="py-12 text-center text-[14px] font-medium text-muted">{children}</div>;
+}
+
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    pendente: "bg-amber-500/20 text-amber-400",
-    aprovada: "bg-emerald-500/20 text-emerald-400",
-    rejeitada: "bg-red-500/20 text-red-400",
+    pendente: "bg-amber-500/15 text-amber-600",
+    processando: "bg-amber-500/15 text-amber-600",
+    aprovada: "bg-blue/10 text-blue",
+    rejeitada: "bg-red/10 text-red",
   };
   return (
     <span
-      className={`rounded-lg px-2 py-0.5 text-[11px] font-bold ${styles[status] || "bg-white/10 text-white/50"}`}
+      className={`rounded-lg px-2 py-0.5 text-[11px] font-bold ${styles[status] || "bg-ink/5 text-muted"}`}
     >
       {status}
     </span>
@@ -256,19 +237,19 @@ function Modal({
   }, [state?.ok, onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-[380px] rounded-2xl border border-white/10 bg-[#1a2332] p-6">
-        <h3 className="text-[17px] font-extrabold text-white">
-          {type === "approve" ? "Aprovar Nota" : "Rejeitar Nota"}
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-3 backdrop-blur-sm sm:items-center">
+      <div className="w-full max-w-[400px] rounded-3xl border border-line bg-white p-6 shadow-glass">
+        <h3 className="text-[17px] font-extrabold text-ink">
+          {type === "approve" ? "Aprovar nota" : "Rejeitar nota"}
         </h3>
 
         {state?.error && (
-          <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-[13px] font-medium text-red-400">
+          <div className="mt-3 rounded-xl border border-red/20 bg-red/8 px-3 py-2 text-[13px] font-bold text-red">
             {state.error}
           </div>
         )}
         {state?.ok && (
-          <div className="mt-3 rounded-xl bg-emerald-500/10 px-3 py-2 text-[13px] font-medium text-emerald-400">
+          <div className="mt-3 rounded-xl border border-blue/20 bg-blue/8 px-3 py-2 text-[13px] font-bold text-blue">
             {state.message}
           </div>
         )}
@@ -278,7 +259,7 @@ function Modal({
 
           {type === "approve" ? (
             <div>
-              <label className="text-[12px] font-bold text-white/50">
+              <label className="mb-1.5 block text-[12px] font-bold text-ink">
                 Valor da nota (R$)
               </label>
               <input
@@ -288,19 +269,19 @@ function Modal({
                 min="0.01"
                 required
                 defaultValue={receipt.valor?.toFixed(2) ?? ""}
-                className="mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[14px] font-bold text-white outline-none focus:border-white/20"
+                className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20"
               />
             </div>
           ) : (
             <div>
-              <label className="text-[12px] font-bold text-white/50">
+              <label className="mb-1.5 block text-[12px] font-bold text-ink">
                 Motivo da rejeição
               </label>
               <textarea
                 name="motivo"
                 rows={3}
-                placeholder="Ex: imagem ilegível, nota de outro estabelecimento..."
-                className="mt-1 w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[14px] font-medium text-white outline-none placeholder:text-white/20 focus:border-white/20"
+                placeholder="Ex: imagem ilegível, nota de outro estabelecimento…"
+                className="w-full resize-none rounded-xl border border-line bg-white px-4 py-3 text-[14px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
               />
             </div>
           )}
@@ -309,7 +290,7 @@ function Modal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl border border-white/10 py-3 text-[13px] font-bold text-white/50 transition-colors hover:bg-white/5"
+              className="flex-1 rounded-xl border border-line bg-white py-3 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
             >
               Cancelar
             </button>
@@ -317,12 +298,10 @@ function Modal({
               type="submit"
               disabled={isPending}
               className={`flex-1 rounded-xl py-3 text-[13px] font-bold text-white transition-colors disabled:opacity-50 ${
-                type === "approve"
-                  ? "bg-emerald-500/80 hover:bg-emerald-500"
-                  : "bg-red-500/80 hover:bg-red-500"
+                type === "approve" ? "bg-blue hover:bg-blue-bright" : "bg-red hover:bg-red-deep"
               }`}
             >
-              {isPending ? "Processando..." : type === "approve" ? "Aprovar" : "Rejeitar"}
+              {isPending ? "Processando…" : type === "approve" ? "Aprovar" : "Rejeitar"}
             </button>
           </div>
         </form>

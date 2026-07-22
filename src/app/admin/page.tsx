@@ -5,30 +5,26 @@ export default async function AdminDashboardPage() {
   const maxNotas = Math.max(...m.notasPorDia.map((d) => d.count), 1);
 
   return (
-    <div className="animate-page-in">
-      <h1 className="text-[24px] font-extrabold tracking-tight text-white">
-        Dashboard
-      </h1>
-      <p className="mt-1 text-[14px] font-medium text-white/40">
-        Visão geral do programa de pontos
-      </p>
+    <div>
+      <h1 className="text-[22px] font-extrabold tracking-tight text-ink sm:text-[24px]">Dashboard</h1>
+      <p className="mt-1 text-[14px] font-medium text-muted">Visão geral do programa de pontos</p>
 
-      {/* Metric cards */}
-      <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <MetricCard label="Clientes ativos" value={fmt(m.totalClientes)} color="blue" />
-        <MetricCard label="Notas hoje" value={fmt(m.notasHoje)} color="emerald" />
-        <MetricCard label="Notas pendentes" value={fmt(m.notasPendentes)} color="amber" />
+      {/* Métricas */}
+      <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <MetricCard label="Clientes" value={fmt(m.totalClientes)} accent="blue" />
+        <MetricCard label="Notas hoje" value={fmt(m.notasHoje)} accent="ink" />
+        <MetricCard label="Notas pendentes" value={fmt(m.notasPendentes)} accent="amber" />
         <MetricCard
           label="Pontos cred. / resg."
           value={`${fmt(m.pontosCredTotal)} / ${fmt(m.pontosDebTotal)}`}
-          color="purple"
+          accent="red"
         />
       </div>
 
-      {/* Chart: notas por dia */}
-      <div className="mt-8 rounded-2xl border border-white/5 bg-white/[0.03] p-6">
-        <h2 className="text-[15px] font-bold text-white/70">Notas — últimos 7 dias</h2>
-        <div className="mt-6 flex items-end gap-3" style={{ height: 160 }}>
+      {/* Gráfico */}
+      <div className="glass mt-6 rounded-2xl p-4 shadow-soft sm:mt-8 sm:p-6">
+        <h2 className="text-[15px] font-bold text-ink">Notas — últimos 7 dias</h2>
+        <div className="mt-6 flex items-end gap-2 sm:gap-3" style={{ height: 160 }}>
           {m.notasPorDia.map((d) => {
             const pct = maxNotas > 0 ? (d.count / maxNotas) * 100 : 0;
             const dayLabel = new Date(d.dia + "T12:00:00").toLocaleDateString("pt-BR", {
@@ -36,14 +32,12 @@ export default async function AdminDashboardPage() {
             });
             return (
               <div key={d.dia} className="flex flex-1 flex-col items-center gap-2">
-                <span className="text-[12px] font-bold text-white/50">{d.count}</span>
+                <span className="text-[12px] font-bold text-muted">{d.count}</span>
                 <div
-                  className="w-full rounded-lg bg-gradient-to-t from-blue-500/80 to-blue-400/60 transition-all"
+                  className="w-full rounded-lg bg-gradient-to-t from-blue to-blue-bright transition-all"
                   style={{ height: `${Math.max(pct, 4)}%`, minHeight: 6 }}
                 />
-                <span className="text-[11px] font-semibold text-white/30 capitalize">
-                  {dayLabel}
-                </span>
+                <span className="text-[11px] font-semibold capitalize text-muted">{dayLabel}</span>
               </div>
             );
           })}
@@ -56,25 +50,24 @@ export default async function AdminDashboardPage() {
 function MetricCard({
   label,
   value,
-  color,
+  accent,
 }: {
   label: string;
   value: string;
-  color: "blue" | "emerald" | "amber" | "purple";
+  accent: "blue" | "red" | "amber" | "ink";
 }) {
-  const colors = {
-    blue: "from-blue-500/20 to-blue-600/5 border-blue-500/20",
-    emerald: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/20",
-    amber: "from-amber-500/20 to-amber-600/5 border-amber-500/20",
-    purple: "from-purple-500/20 to-purple-600/5 border-purple-500/20",
-  };
+  const bar = {
+    blue: "bg-blue",
+    red: "bg-red",
+    amber: "bg-amber-500",
+    ink: "bg-ink",
+  }[accent];
 
   return (
-    <div
-      className={`rounded-2xl border bg-gradient-to-br p-5 ${colors[color]}`}
-    >
-      <div className="text-[12px] font-semibold text-white/40">{label}</div>
-      <div className="mt-2 text-[24px] font-extrabold tracking-tight text-white">
+    <div className="glass relative overflow-hidden rounded-2xl p-4 shadow-soft sm:p-5">
+      <span className={`absolute inset-y-0 left-0 w-1 ${bar}`} />
+      <div className="text-[11.5px] font-semibold text-muted">{label}</div>
+      <div className="mt-2 text-[20px] font-extrabold tracking-tight text-ink sm:text-[24px]">
         {value}
       </div>
     </div>

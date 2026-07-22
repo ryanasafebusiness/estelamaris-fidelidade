@@ -1,5 +1,5 @@
 import BottomNav from "@/components/BottomNav";
-import { StarBrand } from "@/components/icons";
+
 
 type Active = "home" | "recompensas" | "resgatar" | "historico";
 
@@ -7,9 +7,8 @@ export default function EmBreve({ titulo, current }: { titulo: string; current: 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-4 pb-2">
       <header className="flex items-center justify-center pt-4">
-        <div className="flex items-center gap-1.5 text-[17px] font-extrabold tracking-tight">
-          <StarBrand gradId="brandBreve" />
-          estelamaris
+        <div className="flex items-center justify-center">
+          <img src="/logo-pontos.png" alt="Estelamaris" className="h-8 w-auto object-contain" />
         </div>
       </header>
 

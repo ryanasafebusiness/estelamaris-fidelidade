@@ -3,7 +3,6 @@ import BottomNav from "@/components/BottomNav";
 import {
   User,
   Gear,
-  StarBrand,
   StarSolid,
   ArrowUp,
   Plus,
@@ -29,9 +28,8 @@ export default function HomePage() {
         </Link>
 
         <div className="text-center leading-tight">
-          <div className="flex items-center gap-1.5 text-[17px] font-extrabold tracking-tight">
-            <StarBrand gradId="brandTop" />
-            estelamaris
+          <div className="flex items-center justify-center">
+            <img src="/logo-pontos.png" alt="Estelamaris" className="h-8 w-auto object-contain" />
           </div>
           <small className="mt-px block text-[10.5px] font-semibold tracking-wide text-muted">
             Programa de pontos

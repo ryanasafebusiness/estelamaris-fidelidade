@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { StarBrand } from "@/components/icons";
+
 
 /** Moldura das telas de auth: marca no topo + cartão glass central. */
 export default function AuthShell({
@@ -16,9 +16,8 @@ export default function AuthShell({
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-5 pb-8">
       <div className="flex flex-col items-center pt-12">
-        <Link href="/" className="flex items-center gap-2 text-[22px] font-extrabold tracking-tight">
-          <StarBrand gradId="authBrand" width={24} height={24} />
-          estelamaris
+        <Link href="/" className="flex items-center justify-center">
+          <img src="/logo-pontos.png" alt="Estelamaris" className="h-10 w-auto object-contain" />
         </Link>
         <p className="mt-1 text-[12px] font-semibold tracking-wide text-muted">
           Programa de pontos

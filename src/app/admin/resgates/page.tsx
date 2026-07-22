@@ -46,7 +46,9 @@ export default function AdminResgatesPage() {
           setLoading(false);
         }
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshKey]);
 
@@ -54,122 +56,98 @@ export default function AdminResgatesPage() {
     ? redemptions.filter(
         (r) =>
           r.codigo.includes(search.toUpperCase()) ||
-          (r.profiles as { nome: string | null } | null)?.nome
-            ?.toLowerCase()
-            .includes(search.toLowerCase()),
+          r.profiles?.nome?.toLowerCase().includes(search.toLowerCase()),
       )
     : redemptions;
 
   return (
-    <div className="animate-page-in">
-      <h1 className="text-[24px] font-extrabold tracking-tight text-white">Resgates</h1>
-      <p className="mt-1 text-[14px] font-medium text-white/40">
-        Baixa de códigos de resgate no caixa
-      </p>
+    <div>
+      <h1 className="text-[22px] font-extrabold tracking-tight text-ink sm:text-[24px]">Resgates</h1>
+      <p className="mt-1 text-[14px] font-medium text-muted">Baixa de códigos de resgate no caixa</p>
 
-      {/* Quick use form */}
-      <div className="mt-6 rounded-2xl border border-white/5 bg-white/[0.03] p-5">
-        <h2 className="text-[14px] font-bold text-white/70">Dar baixa rápida</h2>
+      {/* Baixa rápida */}
+      <div className="glass mt-6 rounded-2xl p-4 shadow-soft sm:p-5">
+        <h2 className="text-[14px] font-bold text-ink">Dar baixa rápida</h2>
         {markState?.error && (
-          <div className="mt-3 rounded-xl bg-red-500/10 px-3 py-2 text-[13px] font-medium text-red-400">
+          <div className="mt-3 rounded-xl border border-red/20 bg-red/8 px-3 py-2 text-[13px] font-bold text-red">
             {markState.error}
           </div>
         )}
         {markState?.ok && (
-          <div className="mt-3 rounded-xl bg-emerald-500/10 px-3 py-2 text-[13px] font-medium text-emerald-400">
+          <div className="mt-3 rounded-xl border border-blue/20 bg-blue/8 px-3 py-2 text-[13px] font-bold text-blue">
             {markState.message}
           </div>
         )}
-        <form action={markAction} className="mt-3 flex gap-3">
+        <form action={markAction} className="mt-3 flex flex-col gap-3 sm:flex-row">
           <input
             name="codigo"
             placeholder="Código do resgate (ex: A1B2C3D4)"
             required
-            className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[14px] font-bold uppercase tracking-wider text-white outline-none placeholder:text-white/20 focus:border-white/20"
+            className="flex-1 rounded-xl border border-line bg-white px-4 py-3 text-[14px] font-bold uppercase tracking-wider text-ink outline-none placeholder:font-medium placeholder:normal-case placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
           />
           <button
             type="submit"
             disabled={markPending}
-            className="rounded-xl bg-emerald-500/80 px-6 py-3 text-[13px] font-bold text-white transition-colors hover:bg-emerald-500 disabled:opacity-50"
+            className="rounded-xl bg-blue px-6 py-3 text-[13px] font-bold text-white transition-colors hover:bg-blue-bright disabled:opacity-50"
           >
-            {markPending ? "..." : "Usar"}
+            {markPending ? "…" : "Usar"}
           </button>
         </form>
       </div>
 
-      {/* Search */}
+      {/* Busca */}
       <div className="mt-6">
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por código ou nome..."
-          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-[13px] font-medium text-white outline-none placeholder:text-white/20 focus:border-white/20"
+          placeholder="Buscar por código ou nome…"
+          className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[13px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
         />
       </div>
 
-      {/* Table */}
-      <div className="mt-4 overflow-hidden rounded-2xl border border-white/5">
-        <table className="w-full">
+      {/* Tabela (scroll horizontal no mobile) */}
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-white shadow-soft">
+        <table className="w-full min-w-[640px]">
           <thead>
-            <tr className="border-b border-white/5 bg-white/[0.02]">
-              <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-white/30">
-                Código
-              </th>
-              <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-white/30">
-                Cliente
-              </th>
-              <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-white/30">
-                Recompensa
-              </th>
-              <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-white/30">
-                Pontos
-              </th>
-              <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-white/30">
-                Status
-              </th>
-              <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-white/30">
-                Data
-              </th>
-              <th className="px-4 py-3" />
+            <tr className="border-b border-line bg-ink/[0.02]">
+              {["Código", "Cliente", "Recompensa", "Pontos", "Status", "Data", ""].map((h, i) => (
+                <th
+                  key={i}
+                  className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wider text-muted"
+                >
+                  {h}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-[13px] text-white/30">
-                  Carregando...
+                <td colSpan={7} className="px-4 py-8 text-center text-[13px] text-muted">
+                  Carregando…
                 </td>
               </tr>
             )}
             {!loading && filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-[13px] text-white/30">
+                <td colSpan={7} className="px-4 py-8 text-center text-[13px] text-muted">
                   Nenhum resgate encontrado.
                 </td>
               </tr>
             )}
             {!loading &&
               filtered.map((r) => (
-                <tr
-                  key={r.id}
-                  className="border-b border-white/5 transition-colors hover:bg-white/[0.02]"
-                >
-                  <td className="px-4 py-3 font-mono text-[13px] font-bold tracking-wider text-white">
+                <tr key={r.id} className="border-b border-line transition-colors hover:bg-ink/[0.02]">
+                  <td className="px-4 py-3 font-mono text-[13px] font-bold tracking-wider text-ink">
                     {r.codigo}
                   </td>
-                  <td className="px-4 py-3 text-[13px] text-white/60">
-                    {(r.profiles as { nome: string | null } | null)?.nome || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-[13px] text-white/60">
-                    {(r.rewards as { titulo: string } | null)?.titulo || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-[13px] font-bold text-white/70">
-                    {r.custo_pontos}
-                  </td>
+                  <td className="px-4 py-3 text-[13px] text-ink/70">{r.profiles?.nome || "—"}</td>
+                  <td className="px-4 py-3 text-[13px] text-ink/70">{r.rewards?.titulo || "—"}</td>
+                  <td className="px-4 py-3 text-[13px] font-bold text-ink">{r.custo_pontos}</td>
                   <td className="px-4 py-3">
                     <RedemptionBadge status={r.status} />
                   </td>
-                  <td className="px-4 py-3 text-[12px] text-white/40">
+                  <td className="px-4 py-3 text-[12px] text-muted">
                     {new Date(r.created_at).toLocaleDateString("pt-BR")}
                   </td>
                   <td className="px-4 py-3">
@@ -179,7 +157,7 @@ export default function AdminResgatesPage() {
                         <button
                           type="submit"
                           disabled={markPending}
-                          className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-[11px] font-bold text-emerald-400 transition-colors hover:bg-emerald-500/30 disabled:opacity-50"
+                          className="rounded-lg bg-blue px-3 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-blue-bright disabled:opacity-50"
                         >
                           Usar
                         </button>
@@ -197,14 +175,14 @@ export default function AdminResgatesPage() {
 
 function RedemptionBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    ativo: "bg-blue-500/20 text-blue-400",
-    usado: "bg-emerald-500/20 text-emerald-400",
-    expirado: "bg-amber-500/20 text-amber-400",
-    cancelado: "bg-red-500/20 text-red-400",
+    ativo: "bg-blue/10 text-blue",
+    usado: "bg-ink/10 text-ink",
+    expirado: "bg-amber-500/15 text-amber-600",
+    cancelado: "bg-red/10 text-red",
   };
   return (
     <span
-      className={`rounded-lg px-2 py-0.5 text-[11px] font-bold ${styles[status] || "bg-white/10 text-white/50"}`}
+      className={`rounded-lg px-2 py-0.5 text-[11px] font-bold ${styles[status] || "bg-ink/5 text-muted"}`}
     >
       {status}
     </span>
