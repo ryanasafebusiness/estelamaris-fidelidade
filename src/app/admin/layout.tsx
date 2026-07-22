@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
@@ -28,7 +29,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       {/* Sidebar (desktop) */}
       <aside className="glass sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-line px-4 py-6 md:flex">
         <div className="mb-8 flex flex-col gap-1 px-1">
-          <img src="/logo-pontos.png" alt="Estelamaris" className="h-8 w-auto object-contain self-start" />
+          <Image src="/logo-pontos.png" alt="Estelamaris" width={110} height={32} className="h-8 w-auto object-contain self-start" priority />
           <div className="text-[10.5px] font-semibold text-muted pl-1">Painel Admin</div>
         </div>
 
@@ -51,7 +52,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="glass sticky top-0 z-20 border-b border-line px-4 py-3 md:hidden">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/logo-pontos.png" alt="Estelamaris" className="h-6 w-auto object-contain" />
+            <Image src="/logo-pontos.png" alt="Estelamaris" width={100} height={24} className="h-6 w-auto object-contain" priority />
             <span className="rounded-full bg-ink/5 px-2 py-0.5 text-[10px] font-bold text-muted">
               Admin
             </span>

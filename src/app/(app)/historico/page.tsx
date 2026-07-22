@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuthAndProfile } from "@/app/actions/auth";
 import BottomNav from "@/components/BottomNav";
@@ -35,7 +36,7 @@ export default async function HistoricoPage() {
         <div className="flex flex-col items-center leading-tight">
           <div className="flex items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-pontos.png" alt="Estelamaris" className="h-8 w-auto object-contain" />
+            <Image src="/logo-pontos.png" alt="Estelamaris" width={110} height={32} className="h-8 w-auto object-contain" priority />
           </div>
           <small className="mt-1 block text-[10.5px] font-semibold tracking-wide text-muted">
             Programa de pontos

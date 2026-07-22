@@ -1,3 +1,4 @@
+import Image from "next/image";
 import BottomNav from "@/components/BottomNav";
 
 type Active = "home" | "recompensas" | "meus-resgates" | "historico";
@@ -7,7 +8,7 @@ export default function EmBreve({ titulo, current }: { titulo: string; current: 
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-4 pb-2">
       <header className="flex items-center justify-center pt-4">
         <div className="flex items-center justify-center">
-          <img src="/logo-pontos.png" alt="Estelamaris" className="h-8 w-auto object-contain" />
+          <Image src="/logo-pontos.png" alt="Estelamaris" width={110} height={32} className="h-8 w-auto object-contain" priority />
         </div>
       </header>
 

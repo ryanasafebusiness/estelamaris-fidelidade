@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuthAndProfile } from "@/app/actions/auth";
@@ -66,8 +67,7 @@ export default async function HomePage() {
 
         <div className="text-center leading-tight">
           <div className="flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-pontos.png" alt="Estelamaris" className="h-8 w-auto object-contain" />
+            <Image src="/logo-pontos.png" alt="Estelamaris" width={110} height={32} className="h-8 w-auto object-contain" priority />
           </div>
           <small className="mt-px block text-[10.5px] font-semibold tracking-wide text-muted">
             Programa de pontos
