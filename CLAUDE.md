@@ -22,7 +22,7 @@
 | Frontend          | Next.js (App Router) + TypeScript + Tailwind                      |
 | Hospedagem front  | Vercel                                                            |
 | Backend de dados  | Supabase (Postgres, Auth, Storage, Realtime, RPC)                |
-| Automação / IA    | n8n — **é o n8n quem chama a API da Anthropic e credita os pontos** |
+| Automação / IA    | n8n — **é o n8n quem chama a API de IA de visão (Groq) e credita os pontos** |
 
 ---
 
@@ -124,7 +124,7 @@ Compra de R$ 137,80, cliente Prata:
 - [x] **Fase 1 — Modelo de dados (Supabase)** — migrations em `supabase/migrations/` (schema, RLS, funções SECURITY DEFINER, trigger de auth, storage, seeds, hardening). **Aplicadas no projeto `xyralczahmkmwlgronmd` via MCP.** Advisor limpo (só o WARN esperado de `redeem_reward`).
 - [x] **Fase 2 — Auth & fluxo do cliente** — cadastro/login e-mail+senha (Supabase Auth), Nome/CPF/Telefone salvos no profile via metadata→trigger, `proxy.ts` protege rotas internas, tela `/perfil` (edita nome/telefone). Testado end-to-end. Falta: plugar dados reais na Início.
 - [x] **Fase 3 — Upload da nota (Storage)** — tela `/enviar-nota`: captura/compressão da foto, upload em `notas/{uid}/`, insere receipt (só `user_id`+`storage_path`, status default). Realtime na `receipts` (migration 14) devolve o resultado (aprovada/rejeitada) do n8n. Depende do n8n ativo+credenciais para creditar.
-- [x] **Fase 4 — Pipeline n8n + Claude** — workflow `estelamaris-processa-nota` no n8n (Railway, id `0o4VY1h10iqks9TR`), URL/modelo fixos no fluxo. **Database Webhook criado via pg_net** (trigger `estelamaris_receipt_inserted` em receipts → POST n8n com header `x-webhook-secret`, migration 11). Falta: criar as 2 credenciais no n8n (service_role + Anthropic), setar `N8N_WEBHOOK_SECRET` no Railway (= segredo do trigger), **ativar** o workflow e testar.
+- [x] **Fase 4 — Pipeline n8n + IA** — workflow `estelamaris-processa-nota` no n8n (Railway, id `0o4VY1h10iqks9TR`), **publicado/ativo**. **IA trocada de Anthropic para Groq** (visão, `meta-llama/llama-4-scout-17b-16e-instruct`, API OpenAI-compatível, credencial `groqApi`). **Database Webhook via pg_net** (trigger `estelamaris_receipt_inserted`, migration 11). Falta: credencial **Supabase service_role** no n8n e `N8N_WEBHOOK_SECRET` no Railway.
 - [~] **Fase 5 — Frontend cliente (Next.js)** — visual base pronto: telas **Início** (`/`, saldo/nível/ações/atividade) e **Resgatar** (`/resgatar`, teclado funcional). Stubs de `/historico` e `/recompensas`. Dados ainda MOCK (`src/lib/mock.ts`) — falta plugar Supabase (depende da Fase 2 auth).
 - [ ] **Fase 6 — Catálogo de recompensas & resgate** — troca de pontos, débito seguro.
 - [ ] **Fase 7 — Admin & observabilidade** — moderação de notas, ajustes, logs.
