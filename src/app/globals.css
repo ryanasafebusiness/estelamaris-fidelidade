@@ -1,69 +1,54 @@
 @import "tailwindcss";
 
 /* =============================================================================
-   Estelamaris — tema base (Tailwind v4)
-   Todas as cores ficam como VARIÁVEIS CSS para ajuste fácil depois.
-   Paleta atual: verde de farmácia (primária) · dourado (pontos) · menta (fundo).
-   Edite os valores em :root e as utilities (bg-primary, text-points, ...) seguem.
+   Estelamaris — tema (Tailwind v4). Identidade: vermelho · azul · branco.
+   Tokens em variáveis CSS para ajuste fácil.
    ============================================================================= */
-:root {
-  /* superfícies */
-  --background: #f2fbf6; /* menta suave (fundo) */
-  --foreground: #0f2e1d; /* verde-escuro (texto) */
-  --card: #ffffff;
-  --card-foreground: #0f2e1d;
+@theme {
+  --color-red: #e11d2e;
+  --color-red-deep: #b4141f;
+  --color-blue: #1e3fa6;
+  --color-blue-bright: #2f5bd4;
+  --color-ink: #14203f;
+  --color-muted: #7a8399;
+  --color-line: #eaecf4;
 
-  /* verde de farmácia — cor primária */
-  --primary: #16a34a;
-  --primary-foreground: #ffffff;
+  --shadow-glass: 0 18px 40px -22px rgba(20, 32, 63, 0.45);
+  --shadow-soft: 0 8px 20px -14px rgba(20, 32, 63, 0.4);
+  --shadow-red: 0 14px 26px -12px rgba(225, 29, 46, 0.6);
 
-  /* menta clara — superfícies/secundária */
-  --secondary: #d1fae5;
-  --secondary-foreground: #0f2e1d;
-
-  /* dourado — PONTOS / recompensas */
-  --points: #d4af37;
-  --points-foreground: #3d2f00;
-  --accent: #d4af37;
-  --accent-foreground: #3d2f00;
-
-  /* apoio */
-  --muted: #e6f4ec;
-  --muted-foreground: #4b6357;
-  --border: #cde9d9;
-  --ring: #16a34a;
-
-  --radius: 0.75rem;
+  --font-sans: var(--font-manrope), system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-
-  --color-points: var(--points);
-  --color-points-foreground: var(--points-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-ring: var(--ring);
-
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
+/* Fundo do app (gradientes suaves vermelho/azul sobre off-white) */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  color: var(--color-ink);
+  min-height: 100dvh;
+  background:
+    radial-gradient(60% 45% at 18% 12%, rgba(47, 91, 212, 0.14), transparent 70%),
+    radial-gradient(55% 45% at 85% 20%, rgba(225, 29, 46, 0.13), transparent 70%),
+    radial-gradient(70% 60% at 50% 110%, rgba(47, 91, 212, 0.1), transparent 70%),
+    linear-gradient(160deg, #f5f7fd 0%, #fbf5f6 55%, #f4f7fc 100%);
+  font-family: var(--font-sans);
+}
+
+/* Materiais reutilizáveis */
+.glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-line);
+}
+.brand-grad {
+  background: linear-gradient(135deg, var(--color-red), var(--color-blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* esconde a scrollbar do feed mantendo o scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

@@ -1,65 +1,184 @@
-import Image from "next/image";
+import Link from "next/link";
+import BottomNav from "@/components/BottomNav";
+import {
+  User,
+  Gear,
+  StarBrand,
+  StarSolid,
+  ArrowUp,
+  Plus,
+  Camera,
+  Swap,
+  History,
+  Dots,
+  Receipt,
+} from "@/components/icons";
+import { perfil, atividade, fmtPts, type Movimento } from "@/lib/mock";
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-4 pb-2">
+      {/* Top bar */}
+      <header className="flex items-center justify-between pt-4">
+        <button
+          aria-label="Perfil"
+          className="glass flex h-[38px] w-[38px] items-center justify-center rounded-full text-ink"
+        >
+          <User />
+        </button>
+
+        <div className="text-center leading-tight">
+          <div className="flex items-center gap-1.5 text-[17px] font-extrabold tracking-tight">
+            <StarBrand gradId="brandTop" />
+            estelamaris
+          </div>
+          <small className="mt-px block text-[10.5px] font-semibold tracking-wide text-muted">
+            Programa de pontos
+          </small>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        <button
+          aria-label="Ajustes"
+          className="glass flex h-[38px] w-[38px] items-center justify-center rounded-full text-ink"
+        >
+          <Gear />
+        </button>
+      </header>
+
+      {/* Pílulas: nível / este mês / enviar */}
+      <section className="mt-3.5 flex gap-2.5">
+        <div className="glass flex flex-1 items-center gap-2.5 rounded-2xl px-3 py-2.5 shadow-soft">
+          <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-red/10 text-red">
+            <StarSolid />
+          </span>
+          <div>
+            <div className="text-[10.5px] font-semibold leading-none text-muted">Nível</div>
+            <div className="mt-0.5 text-[13.5px] font-extrabold leading-tight">{perfil.nivel}</div>
+          </div>
         </div>
-      </main>
+
+        <div className="glass flex flex-1 items-center gap-2.5 rounded-2xl px-3 py-2.5 shadow-soft">
+          <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-blue/10 text-blue">
+            <ArrowUp />
+          </span>
+          <div>
+            <div className="text-[10.5px] font-semibold leading-none text-muted">Este mês</div>
+            <div className="mt-0.5 text-[13.5px] font-extrabold leading-tight">
+              +{perfil.esteMes} pts
+            </div>
+          </div>
+        </div>
+
+        <button
+          aria-label="Enviar nota"
+          className="flex w-[46px] items-center justify-center rounded-2xl bg-ink text-white shadow-soft"
+        >
+          <Plus />
+        </button>
+      </section>
+
+      {/* Saldo */}
+      <section className="mt-6 text-center">
+        <div className="text-[12.5px] font-semibold tracking-wide text-muted">Saldo de pontos</div>
+        <div className="mt-1.5 text-[52px] font-extrabold leading-none tracking-tighter">
+          {fmtPts(perfil.saldo)}
+          <span className="ml-1.5 text-[20px] font-bold tracking-normal text-muted">pts</span>
+        </div>
+      </section>
+
+      {/* Ações */}
+      <section className="mt-5 flex justify-between gap-2 px-1">
+        <ActionButton label="Enviar nota" primary>
+          <Camera />
+        </ActionButton>
+        <ActionButton label="Resgatar" href="/resgatar">
+          <Swap />
+        </ActionButton>
+        <ActionButton label="Histórico" href="/historico">
+          <History />
+        </ActionButton>
+        <ActionButton label="Mais">
+          <Dots />
+        </ActionButton>
+      </section>
+
+      {/* Atividade */}
+      <section className="mt-5 flex items-center justify-between px-1">
+        <h3 className="text-[15px] font-extrabold tracking-tight">Atividade</h3>
+        <Link
+          href="/historico"
+          className="rounded-full bg-blue/10 px-2.5 py-1.5 text-xs font-bold text-blue"
+        >
+          Ver tudo
+        </Link>
+      </section>
+
+      <section className="no-scrollbar mt-2 flex flex-col gap-2 overflow-auto pb-1.5">
+        {atividade.map((m) => (
+          <ActivityRow key={m.id} m={m} />
+        ))}
+      </section>
+
+      <BottomNav current="home" />
+    </main>
+  );
+}
+
+function ActionButton({
+  children,
+  label,
+  primary,
+  href,
+}: {
+  children: React.ReactNode;
+  label: string;
+  primary?: boolean;
+  href?: string;
+}) {
+  const box = primary
+    ? "bg-gradient-to-b from-red to-red-deep text-white shadow-red"
+    : "glass text-ink shadow-soft";
+  const inner = (
+    <>
+      <span
+        className={`flex h-14 w-14 items-center justify-center rounded-[20px] transition-transform hover:-translate-y-0.5 ${box}`}
+      >
+        {children}
+      </span>
+      <span className="text-[11.5px] font-bold text-ink">{label}</span>
+    </>
+  );
+  const cls = "flex flex-1 flex-col items-center gap-2";
+  return href ? (
+    <Link href={href} className={cls}>
+      {inner}
+    </Link>
+  ) : (
+    <button className={cls} aria-label={label}>
+      {inner}
+    </button>
+  );
+}
+
+function ActivityRow({ m }: { m: Movimento }) {
+  const pos = m.pontos >= 0;
+  return (
+    <div className="glass flex items-center gap-3 rounded-2xl px-3 py-2.5 shadow-soft">
+      <span
+        className={`flex h-[38px] w-[38px] items-center justify-center rounded-xl ${
+          pos ? "bg-blue/10 text-blue" : "bg-red/10 text-red"
+        }`}
+      >
+        {pos ? <Receipt /> : <Swap width={18} height={18} />}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="truncate text-[13.5px] font-bold leading-tight">{m.titulo}</div>
+        <div className="mt-0.5 text-[11px] font-semibold text-muted">{m.sub}</div>
+      </div>
+      <div className={`text-[13.5px] font-extrabold ${pos ? "text-blue" : "text-red"}`}>
+        {pos ? "+" : "−"}
+        {fmtPts(Math.abs(m.pontos))} pts
+      </div>
     </div>
   );
 }

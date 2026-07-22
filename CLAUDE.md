@@ -62,21 +62,24 @@ Compra de R$ 137,80, cliente Prata:
 
 ## 5. Identidade visual
 
-- **Nome exibido:** Estelamaris.
-- **Paleta atual (implementada no tema):** **verde de farmácia (primária) · dourado (pontos) · menta (fundo)**.
-  | Papel                         | Token CSS / Tailwind         | Hex base (ajustar depois) |
-  |-------------------------------|------------------------------|---------------------------|
-  | Verde farmácia — primária     | `--primary` / `bg-primary`   | `#16A34A`                 |
-  | Dourado — pontos/recompensas  | `--points` / `text-points`   | `#D4AF37`                 |
-  | Menta — fundo                 | `--background`               | `#F2FBF6`                 |
-  | Menta clara — secundária      | `--secondary`                | `#D1FAE5`                 |
-  | Verde-escuro — texto          | `--foreground`               | `#0F2E1D`                 |
-- Todas as cores são **variáveis CSS** em `src/app/globals.css` (Tailwind v4 `@theme`), fáceis de ajustar.
-- Tema claro por padrão (contexto de farmácia: limpo, confiável).
+- **Nome exibido:** estelamaris (logotipo com estrela em gradiente vermelho→azul).
+- **Paleta DEFINITIVA (mockup aprovado):** **vermelho · azul · branco**, sobre off-white com ink navy.
+  | Papel                        | Token Tailwind        | Hex        |
+  |------------------------------|-----------------------|------------|
+  | Vermelho — primária/ações    | `red` / `bg-red`      | `#E11D2E`  |
+  | Vermelho profundo (gradiente)| `red-deep`            | `#B4141F`  |
+  | Azul — créditos/secundária   | `blue` / `text-blue`  | `#1E3FA6`  |
+  | Azul vivo                    | `blue-bright`         | `#2F5BD4`  |
+  | Ink (texto/navbar ativa)     | `ink`                 | `#14203F`  |
+  | Muted (texto secundário)     | `muted`               | `#7A8399`  |
+  | Linhas/bordas                | `line`                | `#EAECF4`  |
+- **Fonte:** Manrope (400–800), via `next/font`.
+- **Materiais:** cartões "glass" (`.glass`), sombras `shadow-soft`/`shadow-glass`/`shadow-red`,
+  fundo com gradientes radiais suaves vermelho/azul. Tudo em `src/app/globals.css` (Tailwind v4 `@theme`).
+- Créditos aparecem em **azul**, débitos/ações primárias em **vermelho**.
 
-> ⚠️ **Divergência a resolver:** numa conversa inicial a identidade citada foi **vermelho/azul/branco**;
-> depois foi pedido explicitamente **verde/dourado/menta** para o tema (implementado). Confirmar qual é a
-> paleta definitiva e/ou os hex exatos do logo. Trocar é só editar as variáveis em `globals.css`.
+> Histórico: cores passaram por verde/dourado/menta, mas o mockup aprovado fixou **vermelho/azul/branco**.
+> Trocar tokens é só editar as variáveis em `globals.css`.
 
 ---
 
@@ -113,7 +116,7 @@ Compra de R$ 137,80, cliente Prata:
 - [ ] **Fase 2 — Auth & fluxo do cliente** — cadastro/login, perfil, saldo/nível.
 - [ ] **Fase 3 — Upload da nota (Storage)** — captura de foto mobile, upload seguro, registro pendente.
 - [ ] **Fase 4 — Pipeline n8n + Claude** — OCR/leitura do valor, dedupe, crédito via service_role.
-- [ ] **Fase 5 — Frontend cliente (Next.js)** — telas de saldo, histórico, envio de nota, resgate.
+- [~] **Fase 5 — Frontend cliente (Next.js)** — visual base pronto: telas **Início** (`/`, saldo/nível/ações/atividade) e **Resgatar** (`/resgatar`, teclado funcional). Stubs de `/historico` e `/recompensas`. Dados ainda MOCK (`src/lib/mock.ts`) — falta plugar Supabase (depende da Fase 2 auth).
 - [ ] **Fase 6 — Catálogo de recompensas & resgate** — troca de pontos, débito seguro.
 - [ ] **Fase 7 — Admin & observabilidade** — moderação de notas, ajustes, logs.
 - [ ] **Fase 8 — Testes, segurança & deploy** — RLS tests, deploy Vercel, hardening.
