@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+/* =============================================================================
+   Estelamaris — tema base (Tailwind v4)
+   Todas as cores ficam como VARIÁVEIS CSS para ajuste fácil depois.
+   Paleta atual: verde de farmácia (primária) · dourado (pontos) · menta (fundo).
+   Edite os valores em :root e as utilities (bg-primary, text-points, ...) seguem.
+   ============================================================================= */
+:root {
+  /* superfícies */
+  --background: #f2fbf6; /* menta suave (fundo) */
+  --foreground: #0f2e1d; /* verde-escuro (texto) */
+  --card: #ffffff;
+  --card-foreground: #0f2e1d;
+
+  /* verde de farmácia — cor primária */
+  --primary: #16a34a;
+  --primary-foreground: #ffffff;
+
+  /* menta clara — superfícies/secundária */
+  --secondary: #d1fae5;
+  --secondary-foreground: #0f2e1d;
+
+  /* dourado — PONTOS / recompensas */
+  --points: #d4af37;
+  --points-foreground: #3d2f00;
+  --accent: #d4af37;
+  --accent-foreground: #3d2f00;
+
+  /* apoio */
+  --muted: #e6f4ec;
+  --muted-foreground: #4b6357;
+  --border: #cde9d9;
+  --ring: #16a34a;
+
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-points: var(--points);
+  --color-points-foreground: var(--points-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
