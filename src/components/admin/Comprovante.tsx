@@ -35,7 +35,7 @@ export default function Comprovante({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-3 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-[360px] overflow-hidden rounded-3xl border border-line glass shadow-glass">
+      <div id="printable-receipt" className="w-full max-w-[360px] overflow-hidden rounded-3xl border border-line glass shadow-glass">
         {/* Topo */}
         <div className="bg-gradient-to-b from-red to-red-deep px-6 py-5 text-center text-white">
           <div className="text-[12px] font-semibold uppercase tracking-wider opacity-80">
@@ -77,7 +77,7 @@ export default function Comprovante({
           {data.used_at && <Row k="Usado em" v={dt(data.used_at)} />}
         </div>
 
-        <div className="flex gap-2 px-6 pb-6 pt-2">
+        <div className="print-hide flex gap-2 px-6 pb-6 pt-2">
           <button
             onClick={() => window.print()}
             className="flex-1 rounded-xl border border-line bg-white/50 dark:bg-transparent py-3 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
