@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!profile || profile.papel !== "admin") redirect("/");
 
   return (
-    <div className="dark flex min-h-dvh flex-col md:flex-row">
+    <div className="flex min-h-dvh flex-col md:flex-row">
       {/* Sidebar (desktop) */}
       <aside className="glass sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-line px-4 py-6 md:flex">
         <div className="mb-8 flex flex-col gap-1 px-1">
