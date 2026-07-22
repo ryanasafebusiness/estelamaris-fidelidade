@@ -29,8 +29,8 @@
         { "id": "a1", "name": "receipt_id", "value": "={{ $json.body?.record?.id ?? $json.record?.id ?? $json.body?.id }}", "type": "string" },
         { "id": "a2", "name": "user_id", "value": "={{ $json.body?.record?.user_id ?? $json.record?.user_id }}", "type": "string" },
         { "id": "a3", "name": "storage_path", "value": "={{ $json.body?.record?.storage_path ?? $json.record?.storage_path }}", "type": "string" },
-        { "id": "a4", "name": "supabase_url", "value": "={{ $env.SUPABASE_URL || \"https://xyralczahmkmwlgronmd.supabase.co\" }}", "type": "string" },
-        { "id": "a5", "name": "anthropic_model", "value": "={{ $env.ANTHROPIC_MODEL || \"claude-haiku-4-5-20251001\" }}", "type": "string" },
+        { "id": "a4", "name": "supabase_url", "value": "https://xyralczahmkmwlgronmd.supabase.co", "type": "string" },
+        { "id": "a5", "name": "anthropic_model", "value": "claude-haiku-4-5-20251001", "type": "string" },
         { "id": "a6", "name": "janela_dias", "value": 90, "type": "number" },
         { "id": "a7", "name": "verificar_cnpj", "value": false, "type": "boolean" },
         { "id": "a8", "name": "cnpj_farmacia", "value": "", "type": "string" }
