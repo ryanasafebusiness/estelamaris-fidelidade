@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
 import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt } from "@/components/icons";
+import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
 
 type Movimento = { id: number; tipo: string; pontos: number; descricao: string | null; created_at: string };
 
@@ -129,8 +130,8 @@ export default async function HomePage() {
         <ActionButton label="Enviar nota" primary href="/enviar-nota">
           <Camera />
         </ActionButton>
-        <ActionButton label="Resgatar" href="/resgatar">
-          <Swap />
+        <ActionButton label="Recompensas" href="/recompensas">
+          <StarSolid />
         </ActionButton>
         <ActionButton label="Histórico" href="/historico">
           <History />
@@ -141,25 +142,26 @@ export default async function HomePage() {
       </section>
 
       {/* Atividade */}
-      <section className="mt-5 flex items-center justify-between px-1">
-        <h3 className="text-[17px] font-extrabold tracking-tight text-ink">Atividade</h3>
-        <Link
-          href="/historico"
-          className="rounded-full bg-ink/5 px-3 py-1.5 text-[12.5px] font-bold text-blue transition-colors hover:bg-ink/10"
-        >
-          Ver tudo
-        </Link>
-      </section>
-
-      <section className="no-scrollbar mt-2 flex flex-col gap-2 overflow-auto pb-1.5">
-        {atividade.length === 0 && (
-          <div className="glass rounded-[20px] p-5 text-center text-[13px] font-medium text-muted shadow-soft">
-            Nenhuma atividade ainda. Envie sua primeira nota para ganhar pontos.
-          </div>
-        )}
-        {atividade.map((m) => (
-          <ActivityRow key={m.id} m={m} />
-        ))}
+      <section className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-[17px] font-extrabold tracking-tight text-ink">Últimas movimentações</h2>
+          <Link href="/historico" className="text-[12.5px] font-bold text-blue hover:underline">
+            Ver tudo
+          </Link>
+        </div>
+        <AnimatedList className="flex flex-col gap-2.5">
+          {atividade.length === 0 ? (
+            <div className="glass rounded-[20px] p-5 text-center shadow-soft">
+              <span className="text-[13px] font-medium text-muted">Nenhuma atividade recente.</span>
+            </div>
+          ) : (
+            atividade.map((m) => (
+              <AnimatedItem key={m.id}>
+                <ActivityRow m={m} />
+              </AnimatedItem>
+            ))
+          )}
+        </AnimatedList>
       </section>
 
       <BottomNav current="home" />

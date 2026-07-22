@@ -110,7 +110,7 @@ export default function MeusResgatesPage() {
         })}
       </section>
 
-      <BottomNav current="resgatar" />
+      <BottomNav current="meus-resgates" />
 
       {aberto && <CodigoResgate resgate={aberto} onClose={() => setAberto(null)} />}
     </main>

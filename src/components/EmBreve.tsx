@@ -1,7 +1,6 @@
 import BottomNav from "@/components/BottomNav";
 
-
-type Active = "home" | "recompensas" | "resgatar" | "historico";
+type Active = "home" | "recompensas" | "meus-resgates" | "historico";
 
 export default function EmBreve({ titulo, current }: { titulo: string; current: Active }) {
   return (

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { NavHome, NavStar, Swap, NavDoc } from "./icons";
 
-type Active = "home" | "recompensas" | "resgatar" | "historico";
+type Active = "home" | "recompensas" | "meus-resgates" | "historico";
 
 const item = "flex h-11 w-11 items-center justify-center rounded-full text-muted transition-colors";
 const active = "bg-ink text-white";
@@ -20,9 +20,9 @@ export default function BottomNav({ current = "home" }: { current?: Active }) {
         <NavStar />
       </Link>
       <Link
-        href="/resgatar"
-        aria-label="Resgatar"
-        className={`${item} ${current === "resgatar" ? active : ""}`}
+        href="/meus-resgates"
+        aria-label="Meus Cupons"
+        className={`${item} ${current === "meus-resgates" ? active : ""}`}
       >
         <Swap width={21} height={21} />
       </Link>
