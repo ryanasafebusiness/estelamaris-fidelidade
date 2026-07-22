@@ -1,5 +1,5 @@
-import EmBreve from "@/components/EmBreve";
+import { redirect } from "next/navigation";
 
 export default function RecompensasPage() {
-  return <EmBreve titulo="Recompensas" current="recompensas" />;
+  redirect("/resgatar");
 }

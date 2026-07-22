@@ -64,8 +64,20 @@ export default function AdminResgatesPage() {
 
   return (
     <div>
-      <h1 className="text-[22px] font-extrabold tracking-tight text-ink sm:text-[24px]">Resgates</h1>
-      <p className="mt-1 text-[14px] font-medium text-muted">Baixa de códigos de resgate no caixa</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-[22px] font-extrabold tracking-tight text-ink sm:text-[24px]">
+            Resgates
+          </h1>
+          <p className="mt-1 text-[14px] font-medium text-muted">Baixa de códigos de resgate</p>
+        </div>
+        <a
+          href="/caixa"
+          className="shrink-0 rounded-xl bg-ink px-4 py-2.5 text-[13px] font-bold text-white transition-colors hover:opacity-90"
+        >
+          Abrir caixa →
+        </a>
+      </div>
 
       {/* Baixa rápida */}
       <div className="glass mt-6 rounded-2xl p-4 shadow-soft sm:p-5">

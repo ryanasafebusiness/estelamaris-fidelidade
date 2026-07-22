@@ -1,147 +1,198 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Close, StarSolid, SwapVert, Backspace } from "@/components/icons";
-import { perfil, RESGATE, fmtPts, fmtBRL } from "@/lib/mock";
+import { createClient } from "@/lib/supabase/client";
+import { Close } from "@/components/icons";
+import BottomNav from "@/components/BottomNav";
+import CodigoResgate, { type Resgate } from "@/components/CodigoResgate";
 
-const SALDO = perfil.saldo;
+type Reward = {
+  id: string;
+  titulo: string;
+  descricao: string | null;
+  custo_pontos: number;
+  valor_reais: number;
+};
+
+function brl(n: number) {
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+function fmt(n: number) {
+  return n.toLocaleString("pt-BR");
+}
 
 export default function ResgatarPage() {
-  const [pts, setPts] = useState("480");
+  const supabase = createClient();
+  const [saldo, setSaldo] = useState<number | null>(null);
+  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [confirmando, setConfirmando] = useState<Reward | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+  const [resgate, setResgate] = useState<Resgate | null>(null);
 
-  const n = Math.min(parseInt(pts || "0", 10) || 0, SALDO);
-  const brl = n * RESGATE.reaisPorPonto;
+  async function carregar() {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData.user?.id;
+    const [{ data: perfil }, { data: rw }] = await Promise.all([
+      uid
+        ? supabase.from("profiles").select("pontos_saldo").eq("id", uid).single()
+        : Promise.resolve({ data: null }),
+      supabase
+        .from("rewards")
+        .select("id, titulo, descricao, custo_pontos, valor_reais")
+        .eq("ativo", true)
+        .order("custo_pontos", { ascending: true }),
+    ]);
+    setSaldo((perfil as { pontos_saldo: number } | null)?.pontos_saldo ?? 0);
+    setRewards((rw ?? []) as Reward[]);
+    setLoading(false);
+  }
 
-  function press(k: string) {
-    setPts((prev) => {
-      if (k === "del") return prev.slice(0, -1);
-      let next = prev === "0" ? "" : prev;
-      if (next.length >= 6) return next;
-      next += k;
-      // limita ao saldo
-      if ((parseInt(next, 10) || 0) > SALDO) return String(SALDO);
-      return next;
+  useEffect(() => {
+    carregar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function confirmarResgate() {
+    if (!confirmando) return;
+    setEnviando(true);
+    setErro(null);
+    const { data, error } = await supabase.rpc("redeem_reward", { p_reward: confirmando.id });
+    setEnviando(false);
+    if (error) {
+      setErro(error.message);
+      return;
+    }
+    const r = data as {
+      codigo: string;
+      custo: number;
+      saldo: number;
+      expira_em: string;
+      redemption_id: string;
+    };
+    setResgate({
+      redemptionId: r.redemption_id,
+      codigo: r.codigo,
+      reward: confirmando.titulo,
+      valor: confirmando.valor_reais,
+      custo: r.custo,
+      status: "ativo",
+      expira_em: r.expira_em,
     });
+    setSaldo(r.saldo);
+    setConfirmando(null);
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-4 pb-5">
-      {/* Header */}
+    <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-4 pb-2">
       <header className="flex items-center justify-between pt-4">
         <Link
           href="/"
-          aria-label="Fechar"
+          aria-label="Voltar"
           className="glass flex h-[38px] w-[38px] items-center justify-center rounded-full text-ink"
         >
           <Close />
         </Link>
         <div className="text-center">
-          <div className="text-[16px] font-extrabold tracking-tight">Resgatar desconto</div>
-          <div className="mt-px text-[11px] font-semibold text-muted">Sem taxa</div>
+          <div className="text-[16px] font-extrabold tracking-tight">Resgatar</div>
+          <div className="mt-px text-[11px] font-semibold text-muted">
+            Saldo: {saldo === null ? "…" : `${fmt(saldo)} pts`}
+          </div>
         </div>
-        <span className="w-[38px]" />
+        <Link href="/meus-resgates" className="text-[12px] font-bold text-blue">
+          Meus resgates
+        </Link>
       </header>
 
-      {/* Taxa */}
-      <div className="mt-3 flex justify-center">
-        <span className="rounded-full bg-ink px-3.5 py-1.5 text-[11.5px] font-bold tracking-wide text-white">
-          100 pontos = R$ 5,00
-        </span>
-      </div>
-
-      {/* Conversor */}
-      <section className="relative mt-3 flex flex-col gap-2.5">
-        <div className="glass flex items-center justify-between rounded-[22px] px-4 py-4 shadow-soft">
-          <div>
-            <div className="text-[30px] font-extrabold tracking-tight">{fmtPts(n)}</div>
-            <div className="mt-0.5 text-[11px] font-semibold text-muted">
-              Saldo: {fmtPts(SALDO)} pontos
-            </div>
+      <section className="mt-5 flex flex-col gap-3">
+        {loading && <div className="py-10 text-center text-[13px] text-muted">Carregando…</div>}
+        {!loading && rewards.length === 0 && (
+          <div className="py-10 text-center text-[13px] text-muted">
+            Nenhuma recompensa disponível.
           </div>
-          <Tag color="red" label="Pontos">
-            <StarSolid width={12} height={12} className="text-white" />
-          </Tag>
-        </div>
-
-        <div className="absolute left-1/2 top-1/2 z-10 flex h-[46px] w-[46px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-line bg-white text-ink shadow-glass">
-          <SwapVert />
-        </div>
-
-        <div className="glass flex items-center justify-between rounded-[22px] px-4 py-4 shadow-soft">
-          <div>
-            <div
-              className={`text-[30px] font-extrabold tracking-tight ${n === 0 ? "text-muted" : ""}`}
-            >
-              {fmtBRL(brl)}
-            </div>
-            <div className="mt-0.5 text-[11px] font-semibold text-muted">Vira desconto no caixa</div>
-          </div>
-          <Tag color="blue" label="Desconto">
-            <span className="text-[11px] font-extrabold text-white">R$</span>
-          </Tag>
-        </div>
+        )}
+        {!loading &&
+          rewards.map((r) => {
+            const podeResgatar = saldo !== null && saldo >= r.custo_pontos;
+            const falta = saldo !== null ? r.custo_pontos - saldo : 0;
+            return (
+              <div key={r.id} className="glass rounded-2xl p-4 shadow-soft">
+                <div className="flex items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[15px] font-extrabold text-ink">{r.titulo}</div>
+                    {r.descricao && (
+                      <div className="mt-0.5 text-[12px] text-muted">{r.descricao}</div>
+                    )}
+                    <div className="mt-1 text-[12px] font-semibold text-blue">
+                      {brl(r.valor_reais)} de desconto
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-right">
+                    <div className="text-[15px] font-extrabold text-ink">
+                      {fmt(r.custo_pontos)}
+                    </div>
+                    <div className="text-[10.5px] font-medium text-muted">pontos</div>
+                  </div>
+                </div>
+                <button
+                  disabled={!podeResgatar}
+                  onClick={() => {
+                    setErro(null);
+                    setConfirmando(r);
+                  }}
+                  className={`mt-3 w-full rounded-xl py-3 text-[14px] font-extrabold transition-colors ${
+                    podeResgatar
+                      ? "bg-gradient-to-b from-red to-red-deep text-white shadow-red"
+                      : "cursor-not-allowed bg-ink/5 text-muted"
+                  }`}
+                >
+                  {podeResgatar ? "Resgatar" : `Faltam ${fmt(falta)} pts`}
+                </button>
+              </div>
+            );
+          })}
       </section>
 
-      {/* Teclado */}
-      <section className="mt-4 grid grid-cols-3 gap-1">
-        {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((k) => (
-          <Key key={k} onClick={() => press(k)}>
-            {k}
-          </Key>
-        ))}
-        <Key onClick={() => {}} aria-label="ponto" />
-        <Key onClick={() => press("0")}>0</Key>
-        <Key onClick={() => press("del")} aria-label="Apagar">
-          <Backspace />
-        </Key>
-      </section>
+      <BottomNav current="resgatar" />
 
-      <button className="mt-2 rounded-[22px] bg-gradient-to-b from-red to-red-deep px-4 py-4 text-[15px] font-extrabold tracking-wide text-white shadow-red active:translate-y-px">
-        Continuar
-      </button>
+      {/* Confirmação */}
+      {confirmando && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-3 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-[360px] rounded-3xl border border-line bg-white p-6 shadow-glass">
+            <h3 className="text-[17px] font-extrabold text-ink">Confirmar resgate</h3>
+            <p className="mt-2 text-[14px] leading-relaxed text-muted">
+              Você vai usar{" "}
+              <b className="text-ink">{fmt(confirmando.custo_pontos)} pontos</b> e ganhar{" "}
+              <b className="text-ink">{brl(confirmando.valor_reais)} de desconto</b>. Confirmar?
+            </p>
+            {erro && (
+              <div className="mt-3 rounded-xl border border-red/20 bg-red/8 px-3 py-2 text-[13px] font-bold text-red">
+                {erro}
+              </div>
+            )}
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setConfirmando(null)}
+                className="flex-1 rounded-xl border border-line bg-white py-3 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmarResgate}
+                disabled={enviando}
+                className="flex-1 rounded-xl bg-gradient-to-b from-red to-red-deep py-3 text-[13px] font-extrabold text-white shadow-red disabled:opacity-60"
+              >
+                {enviando ? "Resgatando…" : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Código gerado */}
+      {resgate && <CodigoResgate resgate={resgate} onClose={() => setResgate(null)} />}
     </main>
-  );
-}
-
-function Tag({
-  children,
-  color,
-  label,
-}: {
-  children: React.ReactNode;
-  color: "red" | "blue";
-  label: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 rounded-2xl border border-line bg-white px-2.5 py-2 text-[13px] font-extrabold shadow-soft">
-      <span
-        className={`flex h-[22px] w-[22px] items-center justify-center rounded-full ${
-          color === "red" ? "bg-red" : "bg-blue"
-        }`}
-      >
-        {children}
-      </span>
-      {label}
-    </div>
-  );
-}
-
-function Key({
-  children,
-  onClick,
-  ...rest
-}: {
-  children?: React.ReactNode;
-  onClick: () => void;
-} & React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center justify-center rounded-2xl py-3 text-[23px] font-bold text-ink transition-colors hover:bg-ink/5 active:bg-ink/10"
-      {...rest}
-    >
-      {children}
-    </button>
   );
 }

@@ -220,13 +220,15 @@ export async function adminMarkRedemptionUsed(
 
   const { data: redemption, error: findErr } = await admin
     .from("redemptions")
-    .select("id, status")
+    .select("id, status, expires_at")
     .eq("codigo", codigo)
     .single();
 
   if (findErr || !redemption) return { error: "Código não encontrado." };
   if (redemption.status !== "ativo")
     return { error: `Este código já está "${redemption.status}".` };
+  if (redemption.expires_at && new Date(redemption.expires_at) < new Date())
+    return { error: "Código expirado." };
 
   const { error } = await admin
     .from("redemptions")
@@ -237,6 +239,54 @@ export async function adminMarkRedemptionUsed(
 
   revalidatePath("/admin/resgates");
   return { ok: true, message: `Código ${codigo} marcado como usado.` };
+}
+
+// ────────────────────────────────────────────────────────────────────
+// CAIXA — consulta um código para validar antes de dar baixa
+// ────────────────────────────────────────────────────────────────────
+export type CaixaResult = {
+  found: boolean;
+  codigo?: string;
+  reward?: string;
+  valor?: number;
+  custo?: number;
+  cliente?: string;
+  status?: string;
+  expirado?: boolean;
+  expires_at?: string | null;
+  error?: string;
+};
+
+export async function caixaLookup(codigo: string): Promise<CaixaResult> {
+  await requireAdmin();
+  const cod = codigo.trim().toUpperCase();
+  if (!cod) return { found: false, error: "Informe o código." };
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("redemptions")
+    .select("codigo, custo_pontos, status, expires_at, rewards(titulo, valor_reais), profiles(nome)")
+    .eq("codigo", cod)
+    .single();
+
+  if (error || !data) return { found: false, error: "Código não encontrado." };
+
+  const rewards = data.rewards as unknown as { titulo: string; valor_reais: number } | null;
+  const profiles = data.profiles as unknown as { nome: string | null } | null;
+  const expirado =
+    data.status === "ativo" && !!data.expires_at && new Date(data.expires_at) < new Date();
+
+  return {
+    found: true,
+    codigo: data.codigo,
+    reward: rewards?.titulo,
+    valor: rewards?.valor_reais ?? 0,
+    custo: data.custo_pontos,
+    cliente: profiles?.nome ?? "—",
+    status: data.status,
+    expirado,
+    expires_at: data.expires_at,
+  };
 }
 
 // ────────────────────────────────────────────────────────────────────
