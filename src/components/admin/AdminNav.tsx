@@ -61,9 +61,21 @@ function Cog(p: SVGProps<SVGSVGElement>) {
   );
 }
 
+function QrCode(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" {...s} {...p}>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 14h2v2h-2zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2zM17 17h2v2h-2z" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 const items = [
   { href: "/admin", label: "Dashboard", Icon: Dash },
   { href: "/admin/notas", label: "Notas", Icon: Receipt },
+  { href: "/admin/gerar-pontos", label: "Gerar Pontos", Icon: QrCode },
   { href: "/admin/clientes", label: "Clientes", Icon: Users },
   { href: "/admin/catalogo", label: "Catálogo", Icon: Gift },
   { href: "/admin/resgates", label: "Resgates", Icon: Ticket },
