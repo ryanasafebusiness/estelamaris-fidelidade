@@ -109,7 +109,7 @@ Compra de R$ 137,80, cliente Prata:
 ## 7. Fases do projeto
 
 - [ ] **Fase 0 — Fundação & contexto** — este CLAUDE.md, decisões de arredondamento, definição do `hash_dedupe`.
-- [x] **Fase 1 — Modelo de dados (Supabase)** — migrations em `supabase/migrations/` (schema, RLS, funções SECURITY DEFINER, trigger de auth, storage, seeds). _Falta aplicar no banco._
+- [x] **Fase 1 — Modelo de dados (Supabase)** — migrations em `supabase/migrations/` (schema, RLS, funções SECURITY DEFINER, trigger de auth, storage, seeds, hardening). **Aplicadas no projeto `xyralczahmkmwlgronmd` via MCP.** Advisor limpo (só o WARN esperado de `redeem_reward`).
 - [ ] **Fase 2 — Auth & fluxo do cliente** — cadastro/login, perfil, saldo/nível.
 - [ ] **Fase 3 — Upload da nota (Storage)** — captura de foto mobile, upload seguro, registro pendente.
 - [ ] **Fase 4 — Pipeline n8n + Claude** — OCR/leitura do valor, dedupe, crédito via service_role.
