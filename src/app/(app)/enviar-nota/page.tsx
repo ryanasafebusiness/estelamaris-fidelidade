@@ -250,14 +250,23 @@ export default function EnviarNotaPage() {
         )}
 
         {status === "processing" && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex h-24 w-24 items-center justify-center rounded-3xl bg-blue/10 text-blue animate-pulse">
-              <Receipt width={40} height={40} />
+          <div className="flex flex-col items-center gap-6">
+            <div className="relative flex h-24 w-24 items-center justify-center">
+              {/* Anel de fundo */}
+              <div className="absolute inset-0 rounded-full border-[4px] border-line opacity-30"></div>
+              {/* Anel giratório */}
+              <div className="absolute inset-0 rounded-full border-[4px] border-blue border-t-transparent animate-spin"></div>
+              {/* Ícone no meio */}
+              <div className="h-10 w-10 text-blue animate-pulse">
+                <Receipt width={40} height={40} />
+              </div>
             </div>
-            <h2 className="text-[20px] font-extrabold leading-tight">Analisando sua nota...</h2>
-            <p className="text-[14px] font-medium text-muted px-4">
-              A inteligência artificial está lendo os dados da compra. Pode levar alguns segundos.
-            </p>
+            <div>
+              <h2 className="text-[20px] font-extrabold leading-tight">Analisando sua nota...</h2>
+              <p className="mt-2 px-6 text-[14px] font-medium leading-relaxed text-muted">
+                A inteligência artificial está lendo os dados da compra. Pode levar alguns segundos.
+              </p>
+            </div>
           </div>
         )}
 
