@@ -36,10 +36,19 @@ export default async function PerfilPage() {
         />
       </div>
 
+      {profile?.papel === "admin" && (
+        <Link
+          href="/admin"
+          className="mt-4 flex w-full items-center justify-center rounded-2xl bg-ink px-4 py-3.5 text-[14px] font-extrabold text-white shadow-soft transition-transform hover:-translate-y-0.5"
+        >
+          Acessar Painel Admin
+        </Link>
+      )}
+
       <form action={logout} className="mt-4">
         <button
           type="submit"
-          className="w-full rounded-2xl border border-line bg-white/70 px-4 py-3.5 text-[14px] font-extrabold text-red"
+          className="w-full rounded-2xl border border-line bg-white/70 px-4 py-3.5 text-[14px] font-extrabold text-red transition-transform hover:bg-white"
         >
           Sair da conta
         </button>
