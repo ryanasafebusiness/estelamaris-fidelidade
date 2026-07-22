@@ -51,7 +51,12 @@
 
 ### Exemplo de cálculo
 Compra de R$ 137,80, cliente Prata:
-`floor(137,80) = 137` → `137 × 1,2 = 164,4` → (definir regra de arredondamento final na fase de regras).
+`floor(137,80) = 137` → `137 × 1,2 = 164,4` → **floor final = 164 pontos**.
+
+> **Decisão (Fase 1):** o resultado final também é arredondado **para baixo** (`floor`),
+> previsível e sempre a favor da casa. Implementado em `credit_receipt`.
+> **Débito de resgate afeta só `pontos_saldo`; `pontos_acumulados` é vitalício** (nível nunca cai).
+> Código de resgate: 8 caracteres hex maiúsculos, único (`redemptions.codigo`).
 
 ---
 
@@ -104,7 +109,7 @@ Compra de R$ 137,80, cliente Prata:
 ## 7. Fases do projeto
 
 - [ ] **Fase 0 — Fundação & contexto** — este CLAUDE.md, decisões de arredondamento, definição do `hash_dedupe`.
-- [ ] **Fase 1 — Modelo de dados (Supabase)** — tabelas, `config`, RLS, funções SECURITY DEFINER.
+- [x] **Fase 1 — Modelo de dados (Supabase)** — migrations em `supabase/migrations/` (schema, RLS, funções SECURITY DEFINER, trigger de auth, storage, seeds). _Falta aplicar no banco._
 - [ ] **Fase 2 — Auth & fluxo do cliente** — cadastro/login, perfil, saldo/nível.
 - [ ] **Fase 3 — Upload da nota (Storage)** — captura de foto mobile, upload seguro, registro pendente.
 - [ ] **Fase 4 — Pipeline n8n + Claude** — OCR/leitura do valor, dedupe, crédito via service_role.
