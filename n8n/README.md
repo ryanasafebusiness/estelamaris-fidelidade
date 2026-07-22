@@ -12,9 +12,11 @@ extrai os dados → parse + validações (cupom? valor>0? dentro do prazo? **é 
 
 - **Instância:** `https://n8n-production-a73f.up.railway.app` · workflow `0o4VY1h10iqks9TR` · **ativo**
 - **Webhook (produção):** `POST https://n8n-production-a73f.up.railway.app/webhook/estelamaris-nota`
-- **IA:** Groq (API compatível com OpenAI), `qwen/qwen3.6-27b` — é um modelo "thinking": responde
-  com um bloco `<think>...</think>` antes do JSON final. O nó **Parse + validacoes** remove esse
-  bloco antes de fazer `JSON.parse`. `max_tokens: 1500` (o raciocínio consome tokens antes do JSON).
+- **IA:** Groq (API compatível com OpenAI), `qwen/qwen3.6-27b` com **`reasoning_effort: "none"`**
+  (desliga o modo "thinking" do Qwen — sem isso, o modelo às vezes gasta todo o `max_tokens`
+  "pensando" e nunca escreve o JSON final, causando "nao consegui ler a nota" mesmo em notas
+  válidas). O nó **Parse + validacoes** também remove qualquer bloco `<think>...</think>` residual
+  antes de fazer `JSON.parse`, por segurança. `max_tokens: 800`.
 - **Verificação de farmácia (sempre ativa):** só credita nota cujo CNPJ seja `21.135.884/0001-61`
   **OU** cujo nome do estabelecimento contenha `ESTELAMARIS` (comparação sem acento/maiúsculas).
   Notas de outros estabelecimentos são rejeitadas com o motivo "nota nao e da Estelamaris".

@@ -71,7 +71,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [1680, 400],
-      "parameters": { "method": "POST", "url": "https://api.groq.com/openai/v1/chat/completions", "authentication": "predefinedCredentialType", "nodeCredentialType": "groqApi", "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "={{ { \"model\": $(\"Prepara dados\").item.json.modelo_ia, \"messages\": $json.messages, \"max_tokens\": 1500, \"temperature\": 0 } }}", "options": {} },
+      "parameters": { "method": "POST", "url": "https://api.groq.com/openai/v1/chat/completions", "authentication": "predefinedCredentialType", "nodeCredentialType": "groqApi", "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "={{ { \"model\": $(\"Prepara dados\").item.json.modelo_ia, \"messages\": $json.messages, \"max_tokens\": 800, \"temperature\": 0, \"reasoning_effort\": \"none\" } }}", "options": {} },
       "onError": "continueErrorOutput"
     },
     {
