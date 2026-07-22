@@ -1,0 +1,166 @@
+{
+  "name": "Estelamaris - Processa nota",
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "id": "b55459be-2f80-4e1c-978a-83d1b82f439c",
+      "name": "Webhook - Nova nota",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 400],
+      "parameters": { "httpMethod": "POST", "path": "estelamaris-nota", "responseMode": "responseNode", "options": {} },
+      "webhookId": "51295ded-e5e0-4b91-815a-a0d0e6316f5a"
+    },
+    {
+      "id": "5ef15ca9-d418-4867-84f2-3334ea17050f",
+      "name": "Confere segredo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [240, 400],
+      "parameters": { "conditions": { "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 }, "conditions": [{ "leftValue": "={{ $json.headers[\"x-webhook-secret\"] }}", "operator": { "type": "string", "operation": "equals" }, "rightValue": "={{ $env.N8N_WEBHOOK_SECRET }}" }], "combinator": "and" } }
+    },
+    {
+      "id": "19af3238-44f7-4f3c-b33b-42f8af405cd1",
+      "name": "Prepara dados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [480, 400],
+      "parameters": { "mode": "manual", "includeOtherFields": false, "assignments": { "assignments": [
+        { "id": "a1", "name": "receipt_id", "value": "={{ $json.body?.record?.id ?? $json.record?.id ?? $json.body?.id }}", "type": "string" },
+        { "id": "a2", "name": "user_id", "value": "={{ $json.body?.record?.user_id ?? $json.record?.user_id }}", "type": "string" },
+        { "id": "a3", "name": "storage_path", "value": "={{ $json.body?.record?.storage_path ?? $json.record?.storage_path }}", "type": "string" },
+        { "id": "a4", "name": "supabase_url", "value": "={{ $env.SUPABASE_URL || \"https://xyralczahmkmwlgronmd.supabase.co\" }}", "type": "string" },
+        { "id": "a5", "name": "anthropic_model", "value": "={{ $env.ANTHROPIC_MODEL || \"claude-haiku-4-5-20251001\" }}", "type": "string" },
+        { "id": "a6", "name": "janela_dias", "value": 90, "type": "number" },
+        { "id": "a7", "name": "verificar_cnpj", "value": false, "type": "boolean" },
+        { "id": "a8", "name": "cnpj_farmacia", "value": "", "type": "string" }
+      ] } }
+    },
+    {
+      "id": "ac89e933-3481-4204-a16c-b9697dfdd40f",
+      "name": "Marca processando",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [720, 400],
+      "parameters": { "method": "PATCH", "url": "={{ $(\"Prepara dados\").item.json.supabase_url }}/rest/v1/receipts?id=eq.{{ $(\"Prepara dados\").item.json.receipt_id }}&status=eq.pendente", "authentication": "predefinedCredentialType", "nodeCredentialType": "supabaseApi", "sendHeaders": true, "specifyHeaders": "keypair", "headerParameters": { "parameters": [{ "name": "Prefer", "value": "return=representation" }] }, "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "{ \"status\": \"processando\" }", "options": {} },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "70c9192d-9a68-4233-8c1b-7a8d624dfa75",
+      "name": "Gera signed URL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [960, 400],
+      "parameters": { "method": "POST", "url": "={{ $(\"Prepara dados\").item.json.supabase_url }}/storage/v1/object/sign/notas/{{ $(\"Prepara dados\").item.json.storage_path }}", "authentication": "predefinedCredentialType", "nodeCredentialType": "supabaseApi", "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "{ \"expiresIn\": 60 }", "options": {} },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "c2a263bc-5f39-41d7-b98c-0dc43cc4e756",
+      "name": "Baixa imagem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1200, 400],
+      "parameters": { "method": "GET", "url": "={{ $(\"Prepara dados\").item.json.supabase_url }}/storage/v1{{ $json.signedURL }}", "options": { "response": { "response": { "responseFormat": "file", "outputPropertyName": "data" } } } },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "353543da-7224-46f9-9d15-d09d5f37a310",
+      "name": "Monta mensagem Claude",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1440, 400],
+      "parameters": { "mode": "runOnceForAllItems", "language": "javaScript", "jsCode": "const buffer = await this.helpers.getBinaryDataBuffer(0, 'data');\nconst b64 = buffer.toString('base64');\nconst bin = $input.first().binary.data;\nconst mime = (bin && bin.mimeType) ? bin.mimeType : 'image/jpeg';\nconst prompt = 'Voce e um extrator de dados de cupons fiscais brasileiros (NFC-e/SAT). Analise a imagem e responda APENAS com um objeto JSON valido, sem texto extra e sem cercas de codigo. Campos: eh_cupom_fiscal (boolean), valor_total (number ou null), data_compra no formato YYYY-MM-DD ou null, estabelecimento (string ou null), cnpj (string ou null), chave_acesso (44 digitos ou null), confianca (number 0 a 1). Regras: se NAO for cupom/nota fiscal retorne eh_cupom_fiscal=false e os demais null; valor_total e o TOTAL pago (procure TOTAL, VALOR A PAGAR, VALOR PAGO) e ignore subtotais, troco e itens; use ponto como separador decimal e nao inclua simbolo de moeda; responda somente o JSON.';\nreturn [{ json: { messages: [ { role: 'user', content: [ { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } }, { type: 'text', text: prompt } ] } ] } }];" },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "cf0c759e-98f3-4c9e-b572-9730aaf37dce",
+      "name": "Claude - extrai valor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1680, 400],
+      "parameters": { "method": "POST", "url": "https://api.anthropic.com/v1/messages", "authentication": "genericCredentialType", "genericAuthType": "httpHeaderAuth", "sendHeaders": true, "specifyHeaders": "keypair", "headerParameters": { "parameters": [{ "name": "anthropic-version", "value": "2023-06-01" }] }, "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "={{ { \"model\": $(\"Prepara dados\").item.json.anthropic_model, \"max_tokens\": 500, \"messages\": $json.messages } }}", "options": {} },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "9f83f8a6-aa3f-47b2-9ec8-d88854fbd90a",
+      "name": "Parse + validacoes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1920, 400],
+      "parameters": { "mode": "runOnceForAllItems", "language": "javaScript", "jsCode": "const raw = $input.first().json;\nlet text = '';\ntry { text = raw.content[0].text || ''; } catch (err) { text = ''; }\nlet clean = String(text).trim();\nconst s = clean.indexOf('{'); const e2 = clean.lastIndexOf('}');\nif (s >= 0 && e2 > s) { clean = clean.slice(s, e2 + 1); }\nlet data = {}; let parseOk = true;\ntry { data = JSON.parse(clean); } catch (err) { parseOk = false; }\nconst cfg = $('Prepara dados').first().json;\nconst janela = Number(cfg.janela_dias) || 90;\nconst verificarCnpj = cfg.verificar_cnpj === true || cfg.verificar_cnpj === 'true';\nconst cnpjFarm = String(cfg.cnpj_farmacia || '').replace(/\\D/g, '');\nlet valido = true; let motivo = '';\nconst ehCupom = parseOk && data.eh_cupom_fiscal === true;\nconst valor = Number(data.valor_total);\nconst dataCompra = data.data_compra || null;\nconst estab = data.estabelecimento || null;\nconst cnpjDigits = String(data.cnpj || '').replace(/\\D/g, '');\nconst chave = data.chave_acesso ? String(data.chave_acesso).replace(/\\D/g, '') : '';\nif (!parseOk) { valido = false; motivo = 'nao consegui ler a nota'; }\nelse if (!ehCupom) { valido = false; motivo = 'imagem nao parece um cupom fiscal'; }\nelse if (!(valor > 0)) { valido = false; motivo = 'valor da nota ilegivel ou zerado'; }\nelse {\n  if (dataCompra) {\n    const d = new Date(dataCompra + 'T00:00:00Z');\n    const diff = (Date.now() - d.getTime()) / 86400000;\n    if (isFinite(diff) && diff > janela) { valido = false; motivo = 'nota fora do prazo de ' + janela + ' dias'; }\n    else if (isFinite(diff) && diff < -1) { valido = false; motivo = 'data da nota invalida'; }\n  }\n  if (valido && verificarCnpj && cnpjFarm && cnpjDigits !== cnpjFarm) { valido = false; motivo = 'nota nao e desta farmacia'; }\n}\nlet hash;\nif (chave && chave.length >= 20) { hash = 'chave:' + chave; }\nelse { hash = 'dados:' + cnpjDigits + '|' + (isFinite(valor) ? valor.toFixed(2) : '0') + '|' + (dataCompra || ''); }\nreturn [{ json: { valido: valido, motivo: motivo, valor_total: isFinite(valor) ? valor : null, data_compra: dataCompra, estabelecimento: estab, cnpj: cnpjDigits || null, chave_acesso: chave || null, hash_dedupe: hash, ai_raw: parseOk ? data : { erro: 'parse_failed', texto: text } } }];" },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "345e8d7d-92c5-449d-9c83-436f6ec63d3e",
+      "name": "Nota valida?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [2160, 400],
+      "parameters": { "looseTypeValidation": true, "conditions": { "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose", "version": 2 }, "conditions": [{ "leftValue": "={{ $json.valido }}", "operator": { "type": "boolean", "operation": "true", "singleValue": true }, "rightValue": "" }], "combinator": "and" } }
+    },
+    {
+      "id": "5037d47b-b2ca-4f58-8278-460741a9c91c",
+      "name": "Credita (credit_receipt)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [2400, 300],
+      "parameters": { "method": "POST", "url": "={{ $(\"Prepara dados\").item.json.supabase_url }}/rest/v1/rpc/credit_receipt", "authentication": "predefinedCredentialType", "nodeCredentialType": "supabaseApi", "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "={{ { \"p_receipt\": $(\"Prepara dados\").item.json.receipt_id, \"p_valor\": $json.valor_total, \"p_data\": $json.data_compra, \"p_estab\": $json.estabelecimento, \"p_cnpj\": $json.cnpj, \"p_chave\": $json.chave_acesso, \"p_hash\": $json.hash_dedupe, \"p_ai\": $json.ai_raw } }}", "options": {} },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "id": "efb247b6-a795-4a80-8b46-2112d3574127",
+      "name": "Responde 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [2640, 400],
+      "parameters": { "respondWith": "json", "responseBody": "{ \"ok\": true }", "options": { "responseCode": 200 } }
+    },
+    {
+      "id": "7cc0dd7d-f5bc-40a4-85c0-9e20dd5be1cb",
+      "name": "Rejeita (motivo da IA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [2400, 500],
+      "parameters": { "method": "POST", "url": "={{ $(\"Prepara dados\").item.json.supabase_url }}/rest/v1/rpc/reject_receipt", "authentication": "predefinedCredentialType", "nodeCredentialType": "supabaseApi", "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "={{ { \"p_receipt\": $(\"Prepara dados\").item.json.receipt_id, \"p_motivo\": $json.motivo } }}", "options": { "response": { "response": { "neverError": true } } } }
+    },
+    {
+      "id": "7064fe39-5c96-4c98-827f-f409300553a4",
+      "name": "Responde 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [480, 620],
+      "parameters": { "respondWith": "json", "responseBody": "{ \"error\": \"unauthorized\" }", "options": { "responseCode": 401 } }
+    },
+    {
+      "id": "73ddc206-b669-4f2a-bbb0-60f000e593b3",
+      "name": "Rejeita (erro geral)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [2160, 700],
+      "parameters": { "method": "POST", "url": "={{ $(\"Prepara dados\").item.json.supabase_url }}/rest/v1/rpc/reject_receipt", "authentication": "predefinedCredentialType", "nodeCredentialType": "supabaseApi", "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "={{ { \"p_receipt\": $(\"Prepara dados\").item.json.receipt_id, \"p_motivo\": \"erro ao processar a nota\" } }}", "options": { "response": { "response": { "neverError": true } } } }
+    },
+    {
+      "id": "612e09b9-aab6-419c-9f02-c9e085a4efbd",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-50, 350],
+      "parameters": { "content": "Estelamaris - Processa nota. Gatilho: Supabase DB Webhook no INSERT de receipts. Segredo no header x-webhook-secret. Credenciais: Supabase service_role (supabaseApi) e Anthropic (Header Auth x-api-key). Parametros editaveis no no Prepara dados.", "color": 4, "width": 540, "height": 200 }
+    }
+  ],
+  "connections": {
+    "Webhook - Nova nota": { "main": [[{ "node": "Confere segredo?", "type": "main", "index": 0 }]] },
+    "Confere segredo?": { "main": [[{ "node": "Prepara dados", "type": "main", "index": 0 }], [{ "node": "Responde 401", "type": "main", "index": 0 }]] },
+    "Prepara dados": { "main": [[{ "node": "Marca processando", "type": "main", "index": 0 }]] },
+    "Marca processando": { "main": [[{ "node": "Gera signed URL", "type": "main", "index": 0 }], [{ "node": "Rejeita (erro geral)", "type": "main", "index": 0 }]] },
+    "Gera signed URL": { "main": [[{ "node": "Baixa imagem", "type": "main", "index": 0 }], [{ "node": "Rejeita (erro geral)", "type": "main", "index": 0 }]] },
+    "Baixa imagem": { "main": [[{ "node": "Monta mensagem Claude", "type": "main", "index": 0 }], [{ "node": "Rejeita (erro geral)", "type": "main", "index": 0 }]] },
+    "Monta mensagem Claude": { "main": [[{ "node": "Claude - extrai valor", "type": "main", "index": 0 }], [{ "node": "Rejeita (erro geral)", "type": "main", "index": 0 }]] },
+    "Claude - extrai valor": { "main": [[{ "node": "Parse + validacoes", "type": "main", "index": 0 }], [{ "node": "Rejeita (erro geral)", "type": "main", "index": 0 }]] },
+    "Parse + validacoes": { "main": [[{ "node": "Nota valida?", "type": "main", "index": 0 }], [{ "node": "Rejeita (erro geral)", "type": "main", "index": 0 }]] },
+    "Nota valida?": { "main": [[{ "node": "Credita (credit_receipt)", "type": "main", "index": 0 }], [{ "node": "Rejeita (motivo da IA)", "type": "main", "index": 0 }]] },
+    "Credita (credit_receipt)": { "main": [[{ "node": "Responde 200", "type": "main", "index": 0 }], [{ "node": "Rejeita (erro geral)", "type": "main", "index": 0 }]] },
+    "Rejeita (motivo da IA)": { "main": [[{ "node": "Responde 200", "type": "main", "index": 0 }]] },
+    "Rejeita (erro geral)": { "main": [[{ "node": "Responde 200", "type": "main", "index": 0 }]] }
+  }
+}

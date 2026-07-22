@@ -124,7 +124,7 @@ Compra de R$ 137,80, cliente Prata:
 - [x] **Fase 1 — Modelo de dados (Supabase)** — migrations em `supabase/migrations/` (schema, RLS, funções SECURITY DEFINER, trigger de auth, storage, seeds, hardening). **Aplicadas no projeto `xyralczahmkmwlgronmd` via MCP.** Advisor limpo (só o WARN esperado de `redeem_reward`).
 - [x] **Fase 2 — Auth & fluxo do cliente** — cadastro/login e-mail+senha (Supabase Auth), Nome/CPF/Telefone salvos no profile via metadata→trigger, `proxy.ts` protege rotas internas, tela `/perfil` (edita nome/telefone). Testado end-to-end. Falta: plugar dados reais na Início.
 - [ ] **Fase 3 — Upload da nota (Storage)** — captura de foto mobile, upload seguro, registro pendente.
-- [ ] **Fase 4 — Pipeline n8n + Claude** — OCR/leitura do valor, dedupe, crédito via service_role.
+- [x] **Fase 4 — Pipeline n8n + Claude** — workflow `estelamaris-processa-nota` criado no n8n (Railway, id `0o4VY1h10iqks9TR`) e exportado em `n8n/`. Gatilho: Supabase DB Webhook no INSERT de receipts. Status `processando` adicionado (migrations 09/10). Falta: criar credenciais no n8n, setar `N8N_WEBHOOK_SECRET`, criar o Database Webhook, ativar e testar.
 - [~] **Fase 5 — Frontend cliente (Next.js)** — visual base pronto: telas **Início** (`/`, saldo/nível/ações/atividade) e **Resgatar** (`/resgatar`, teclado funcional). Stubs de `/historico` e `/recompensas`. Dados ainda MOCK (`src/lib/mock.ts`) — falta plugar Supabase (depende da Fase 2 auth).
 - [ ] **Fase 6 — Catálogo de recompensas & resgate** — troca de pontos, débito seguro.
 - [ ] **Fase 7 — Admin & observabilidade** — moderação de notas, ajustes, logs.

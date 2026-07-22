@@ -70,12 +70,13 @@ export default function HomePage() {
           </div>
         </div>
 
-        <button
+        <Link
+          href="/enviar-nota"
           aria-label="Enviar nota"
           className="flex w-[46px] items-center justify-center rounded-2xl bg-ink text-white shadow-soft"
         >
           <Plus />
-        </button>
+        </Link>
       </section>
 
       {/* Saldo */}
@@ -89,7 +90,7 @@ export default function HomePage() {
 
       {/* Ações */}
       <section className="mt-5 flex justify-between gap-2 px-1">
-        <ActionButton label="Enviar nota" primary>
+        <ActionButton label="Enviar nota" primary href="/enviar-nota">
           <Camera />
         </ActionButton>
         <ActionButton label="Resgatar" href="/resgatar">
@@ -105,10 +106,10 @@ export default function HomePage() {
 
       {/* Atividade */}
       <section className="mt-5 flex items-center justify-between px-1">
-        <h3 className="text-[15px] font-extrabold tracking-tight">Atividade</h3>
+        <h3 className="text-[17px] font-extrabold tracking-tight text-ink">Atividade</h3>
         <Link
           href="/historico"
-          className="rounded-full bg-blue/10 px-2.5 py-1.5 text-xs font-bold text-blue"
+          className="rounded-full bg-ink/5 px-3 py-1.5 text-[12.5px] font-bold text-blue transition-colors hover:bg-ink/10"
         >
           Ver tudo
         </Link>
@@ -164,19 +165,19 @@ function ActionButton({
 function ActivityRow({ m }: { m: Movimento }) {
   const pos = m.pontos >= 0;
   return (
-    <div className="glass flex items-center gap-3 rounded-2xl px-3 py-2.5 shadow-soft">
+    <div className="glass flex items-center gap-3.5 rounded-[20px] p-3 shadow-soft transition-transform hover:-translate-y-0.5">
       <span
-        className={`flex h-[38px] w-[38px] items-center justify-center rounded-xl ${
-          pos ? "bg-blue/10 text-blue" : "bg-red/10 text-red"
+        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-[14px] ${
+          pos ? "bg-ink/5 text-blue" : "bg-red/10 text-red"
         }`}
       >
-        {pos ? <Receipt /> : <Swap width={18} height={18} />}
+        {pos ? <Receipt width={20} height={20} /> : <Swap width={20} height={20} />}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[13.5px] font-bold leading-tight">{m.titulo}</div>
-        <div className="mt-0.5 text-[11px] font-semibold text-muted">{m.sub}</div>
+        <div className="truncate text-[14.5px] font-bold text-ink">{m.titulo}</div>
+        <div className="mt-0.5 text-[12px] font-medium text-muted">{m.sub}</div>
       </div>
-      <div className={`text-[13.5px] font-extrabold ${pos ? "text-blue" : "text-red"}`}>
+      <div className={`text-[15px] font-extrabold ${pos ? "text-blue" : "text-red"}`}>
         {pos ? "+" : "−"}
         {fmtPts(Math.abs(m.pontos))} pts
       </div>
