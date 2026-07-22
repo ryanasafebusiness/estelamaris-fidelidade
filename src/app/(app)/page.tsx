@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuthAndProfile } from "@/app/actions/auth";
 import BottomNav from "@/components/BottomNav";
 import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt } from "@/components/icons";
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
@@ -23,18 +24,14 @@ function fmtData(iso: string) {
 }
 
 export default async function HomePage() {
+  const { user, profile } = await requireAuthAndProfile();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
 
   const inicioMes = new Date();
   inicioMes.setDate(1);
   inicioMes.setHours(0, 0, 0, 0);
 
-  const [{ data: profile }, { data: atividadeData }, { data: mesData }] = await Promise.all([
-    supabase.from("profiles").select("nome, nivel, pontos_saldo").eq("id", user.id).single(),
+  const [{ data: atividadeData }, { data: mesData }] = await Promise.all([
     supabase
       .from("points_ledger")
       .select("id, tipo, pontos, descricao, created_at")

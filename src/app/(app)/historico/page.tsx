@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireAuthAndProfile } from "@/app/actions/auth";
 import BottomNav from "@/components/BottomNav";
 import { Receipt, Swap, History } from "@/components/icons";
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
@@ -18,12 +19,8 @@ function fmtPts(n: number) {
 }
 
 export default async function HistoricoPage() {
+  const { user } = await requireAuthAndProfile();
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
 
   const { data: ledger } = await supabase
     .from("points_ledger")

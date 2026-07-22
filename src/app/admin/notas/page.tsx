@@ -238,7 +238,7 @@ function Modal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-3 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-[400px] rounded-3xl border border-line bg-white p-6 shadow-glass">
+      <div className="w-full max-w-[400px] rounded-3xl border border-line bg-white/50 dark:bg-transparent p-6 shadow-glass">
         <h3 className="text-[17px] font-extrabold text-ink">
           {type === "approve" ? "Aprovar nota" : "Rejeitar nota"}
         </h3>
@@ -269,7 +269,7 @@ function Modal({
                 min="0.01"
                 required
                 defaultValue={receipt.valor?.toFixed(2) ?? ""}
-                className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[14px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20"
+                className="w-full rounded-xl border border-line bg-white/50 dark:bg-transparent px-4 py-3 text-[14px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20"
               />
             </div>
           ) : (
@@ -281,7 +281,7 @@ function Modal({
                 name="motivo"
                 rows={3}
                 placeholder="Ex: imagem ilegível, nota de outro estabelecimento…"
-                className="w-full resize-none rounded-xl border border-line bg-white px-4 py-3 text-[14px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
+                className="w-full resize-none rounded-xl border border-line bg-white/50 dark:bg-transparent px-4 py-3 text-[14px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
               />
             </div>
           )}
@@ -290,7 +290,7 @@ function Modal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-xl border border-line bg-white py-3 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
+              className="flex-1 rounded-xl border border-line bg-white/50 dark:bg-transparent py-3 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
             >
               Cancelar
             </button>

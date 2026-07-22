@@ -92,7 +92,7 @@ export default function AdminClientesPage() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder="Buscar por nome ou CPF…"
-        className="mt-5 w-full rounded-xl border border-line bg-white px-4 py-3 text-[13px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
+        className="mt-5 w-full rounded-xl border border-line bg-white/50 dark:bg-transparent px-4 py-3 text-[13px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
       />
 
       <div className="mt-4 space-y-2">
@@ -104,7 +104,7 @@ export default function AdminClientesPage() {
           <button
             key={c.id}
             onClick={() => setSelected(c)}
-            className="glass flex w-full items-center gap-3 rounded-2xl p-3.5 text-left shadow-soft transition-colors hover:bg-white sm:p-4"
+            className="glass flex w-full items-center gap-3 rounded-2xl p-3.5 text-left shadow-soft transition-colors hover:bg-white/50 dark:bg-transparent sm:p-4"
           >
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="flex max-h-[92dvh] w-full max-w-[480px] flex-col overflow-hidden rounded-t-3xl border border-line bg-white shadow-glass sm:rounded-3xl">
+      <div className="flex max-h-[92dvh] w-full max-w-[480px] flex-col overflow-hidden rounded-t-3xl border border-line glass shadow-glass sm:rounded-3xl">
         {/* Header */}
         <div className="border-b border-line p-5">
           <div className="flex items-start justify-between gap-3">

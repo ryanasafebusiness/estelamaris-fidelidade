@@ -120,5 +120,57 @@ export async function atualizarPerfil(_prev: FormState, formData: FormData): Pro
 export async function logout(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  revalidatePath("/");
   redirect("/login");
+}
+
+// ---------------------------------------------------------------- COMPLETAR PERFIL
+export async function completarPerfil(_prev: FormState, formData: FormData): Promise<FormState> {
+  const cpfBruto = String(formData.get("cpf") ?? "");
+  const telBruto = String(formData.get("telefone") ?? "");
+
+  const cpf = cpfBruto.replace(/\D/g, "");
+  const celular = telBruto.replace(/\D/g, "");
+
+  if (!cpfCompleto(cpfBruto)) return { error: "Preencha o CPF completo." };
+  if (!telefoneCompleto(telBruto)) return { error: "Preencha o telefone com DDD." };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) return { error: "Usuário não autenticado." };
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ cpf, telefone: mascaraTelefone(telBruto) })
+    .eq("id", user.id);
+
+  if (error) {
+    console.error("Erro ao salvar perfil:", error);
+    if (error.message.includes("profiles_cpf_key")) {
+      return { error: "Este CPF já está cadastrado em outra conta." };
+    }
+    return { error: "Não foi possível salvar os dados. Tente novamente." };
+  }
+
+  redirect("/");
+}
+
+// ---------------------------------------------------------------- PROTEÇÃO DE ROTAS
+export async function requireAuthAndProfile() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile || !profile.cpf) {
+    redirect("/completar-perfil");
+  }
+
+  return { user, profile };
 }

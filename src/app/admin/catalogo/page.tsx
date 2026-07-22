@@ -15,7 +15,7 @@ type Reward = {
 };
 
 const inputCls =
-  "mt-1 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[13px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20";
+  "mt-1 w-full rounded-xl border border-line bg-white/50 dark:bg-transparent px-3.5 py-2.5 text-[13px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20";
 const labelCls = "text-[12px] font-semibold text-muted";
 
 function brl(n: number) {
@@ -197,7 +197,7 @@ function RewardRow({
           <div className="flex gap-2 sm:shrink-0">
             <button
               onClick={onEdit}
-              className="flex-1 rounded-xl border border-line bg-white px-3 py-2 text-[12px] font-bold text-muted transition-colors hover:bg-ink/5 sm:flex-none"
+              className="flex-1 rounded-xl border border-line bg-white/50 dark:bg-transparent px-3 py-2 text-[12px] font-bold text-muted transition-colors hover:bg-ink/5 sm:flex-none"
             >
               Editar
             </button>
@@ -271,7 +271,7 @@ function RewardRow({
             <button
               type="button"
               onClick={onEdit}
-              className="rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
+              className="rounded-xl border border-line bg-white/50 dark:bg-transparent px-4 py-2.5 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
             >
               ✕
             </button>

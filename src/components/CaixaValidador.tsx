@@ -68,7 +68,7 @@ export default function CaixaValidador() {
           onChange={(e) => setCodigo(e.target.value.toUpperCase())}
           onKeyDown={(e) => e.key === "Enter" && validar()}
           placeholder="EM-XXXXX"
-          className="flex-1 rounded-xl border border-line bg-white px-4 py-3 font-mono text-[16px] font-extrabold tracking-widest text-ink outline-none placeholder:font-sans placeholder:font-medium placeholder:tracking-normal placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
+          className="flex-1 rounded-xl border border-line bg-white/50 dark:bg-transparent px-4 py-3 font-mono text-[16px] font-extrabold tracking-widest text-ink outline-none placeholder:font-sans placeholder:font-medium placeholder:tracking-normal placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
         />
         <button
           onClick={validar}
@@ -121,7 +121,7 @@ export default function CaixaValidador() {
 
           <button
             onClick={limpar}
-            className="mt-2 w-full rounded-xl border border-line bg-white py-3 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
+            className="mt-2 w-full rounded-xl border border-line bg-white/50 dark:bg-transparent py-3 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
           >
             Validar outro
           </button>

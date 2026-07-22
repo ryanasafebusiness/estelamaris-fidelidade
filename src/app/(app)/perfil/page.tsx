@@ -1,23 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { logout } from "@/app/actions/auth";
+import { requireAuthAndProfile, logout } from "@/app/actions/auth";
 import PerfilForm from "@/components/auth/PerfilForm";
 import BottomNav from "@/components/BottomNav";
 import { Close } from "@/components/icons";
 
 export default async function PerfilPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("nome, cpf, telefone, nivel")
-    .eq("id", user.id)
-    .single();
+  const { user, profile } = await requireAuthAndProfile();
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-4 pb-2">

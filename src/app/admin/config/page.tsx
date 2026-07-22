@@ -66,7 +66,7 @@ const fields: {
 ];
 
 const inputCls =
-  "mt-1 w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-[14px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20";
+  "mt-1 w-full rounded-xl border border-line bg-white/50 dark:bg-transparent px-3.5 py-2.5 text-[14px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20";
 
 export default function AdminConfigPage() {
   const supabase = createClient();

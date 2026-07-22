@@ -67,7 +67,7 @@ export default function CodigoResgate({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-3 backdrop-blur-sm sm:items-center">
-      <div className="w-full max-w-[360px] overflow-hidden rounded-3xl border border-line bg-white shadow-glass">
+      <div className="w-full max-w-[360px] overflow-hidden rounded-3xl border border-line glass shadow-glass">
         <div className="bg-gradient-to-b from-red to-red-deep px-6 py-5 text-center text-white">
           <div className="text-[12px] font-semibold uppercase tracking-wider opacity-80">
             estelamaris · resgate
@@ -81,7 +81,7 @@ export default function CodigoResgate({
         {/* QR + código */}
         <div className="border-b border-dashed border-line px-6 py-5 text-center">
           <div
-            className={`mx-auto flex h-[168px] w-[168px] items-center justify-center rounded-2xl bg-white p-2 ${
+            className={`mx-auto flex h-[168px] w-[168px] items-center justify-center rounded-2xl bg-white/50 dark:bg-transparent p-2 ${
               usado ? "opacity-30" : ""
             }`}
           >

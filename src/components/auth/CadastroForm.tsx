@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { cadastrar, type FormState } from "@/app/actions/auth";
 import { mascaraCPF, mascaraTelefone } from "@/lib/validators";
-import { Field, Aviso, SubmitButton } from "./ui";
+import { Field, Aviso, SubmitButton, GoogleButton } from "./ui";
 
 export default function CadastroForm() {
   const [state, action] = useActionState<FormState, FormData>(cadastrar, {});
@@ -62,6 +62,12 @@ export default function CadastroForm() {
       <div className="mt-1">
         <SubmitButton>Criar conta</SubmitButton>
       </div>
+      <div className="flex items-center gap-3 py-1">
+        <hr className="flex-1 border-line" />
+        <span className="text-[11px] font-bold text-muted uppercase tracking-wider">OU</span>
+        <hr className="flex-1 border-line" />
+      </div>
+      <GoogleButton />
     </form>
   );
 }

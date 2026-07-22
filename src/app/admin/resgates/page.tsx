@@ -97,7 +97,7 @@ export default function AdminResgatesPage() {
             name="codigo"
             placeholder="Código do resgate (ex: A1B2C3D4)"
             required
-            className="flex-1 rounded-xl border border-line bg-white px-4 py-3 text-[14px] font-bold uppercase tracking-wider text-ink outline-none placeholder:font-medium placeholder:normal-case placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
+            className="flex-1 rounded-xl border border-line bg-white/50 dark:bg-transparent px-4 py-3 text-[14px] font-bold uppercase tracking-wider text-ink outline-none placeholder:font-medium placeholder:normal-case placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
           />
           <button
             type="submit"
@@ -115,12 +115,12 @@ export default function AdminResgatesPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por código ou nome…"
-          className="w-full rounded-xl border border-line bg-white px-4 py-3 text-[13px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
+          className="w-full rounded-xl border border-line bg-white/50 dark:bg-transparent px-4 py-3 text-[13px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
         />
       </div>
 
       {/* Tabela (scroll horizontal no mobile) */}
-      <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-white shadow-soft">
+      <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-white/50 dark:bg-transparent shadow-soft">
         <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b border-line bg-ink/[0.02]">

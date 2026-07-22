@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* =============================================================================
    Estelamaris — tema (Tailwind v4). Identidade: vermelho · azul · branco.
