@@ -6,7 +6,6 @@ import BottomNav from "@/components/BottomNav";
 import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt } from "@/components/icons";
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
 import ScannerButton from "@/components/ScannerButton";
-import ThemeToggle from "@/components/ThemeToggle";
 
 type Movimento = { id: number; tipo: string; pontos: number; descricao: string | null; created_at: string };
 
@@ -75,10 +74,7 @@ export default async function HomePage() {
           </small>
         </div>
 
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <ScannerButton />
-        </div>
+        <ScannerButton />
       </header>
 
       {/* Pílulas: nível / este mês / enviar */}
