@@ -20,12 +20,13 @@ export default function HomePage() {
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-4 pb-2">
       {/* Top bar */}
       <header className="flex items-center justify-between pt-4">
-        <button
+        <Link
+          href="/perfil"
           aria-label="Perfil"
           className="glass flex h-[38px] w-[38px] items-center justify-center rounded-full text-ink"
         >
           <User />
-        </button>
+        </Link>
 
         <div className="text-center leading-tight">
           <div className="flex items-center gap-1.5 text-[17px] font-extrabold tracking-tight">

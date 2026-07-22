@@ -36,6 +36,15 @@
 3. A **service_role key** só existe **no n8n e em rotas de servidor**. **Nunca** no client nem no repositório.
 4. **Toda nota tem `hash_dedupe` único** para impedir crédito duplicado da mesma nota.
 
+### Notas de Auth (Fase 2)
+- Cadastro/login: **e-mail + senha** (Supabase Auth). Nome/CPF/Telefone vão no `options.data`
+  do `signUp` → `handle_new_user` grava no `profiles`.
+- **Confirmação de e-mail está DESLIGADA** no projeto (signUp já retorna sessão → entra direto).
+  Ligar em Auth → Providers → Email para produção (aí o fluxo mostra "confirme seu e-mail").
+- Rotas protegidas por `src/proxy.ts` (Next 16 renomeou `middleware`→`proxy`). Públicas: `/login`, `/cadastro`.
+- CPF validado só por **formato/máscara** (sem dígito verificador). `cpf_disponivel()` faz a pré-checagem
+  amigável — ⚠️ permite enumeração de CPF por anon; endurecer com captcha/rate-limit antes de produção.
+
 ---
 
 ## 4. Regras de pontos (ficam numa tabela `config`, editável)
@@ -113,7 +122,7 @@ Compra de R$ 137,80, cliente Prata:
 
 - [ ] **Fase 0 — Fundação & contexto** — este CLAUDE.md, decisões de arredondamento, definição do `hash_dedupe`.
 - [x] **Fase 1 — Modelo de dados (Supabase)** — migrations em `supabase/migrations/` (schema, RLS, funções SECURITY DEFINER, trigger de auth, storage, seeds, hardening). **Aplicadas no projeto `xyralczahmkmwlgronmd` via MCP.** Advisor limpo (só o WARN esperado de `redeem_reward`).
-- [ ] **Fase 2 — Auth & fluxo do cliente** — cadastro/login, perfil, saldo/nível.
+- [x] **Fase 2 — Auth & fluxo do cliente** — cadastro/login e-mail+senha (Supabase Auth), Nome/CPF/Telefone salvos no profile via metadata→trigger, `proxy.ts` protege rotas internas, tela `/perfil` (edita nome/telefone). Testado end-to-end. Falta: plugar dados reais na Início.
 - [ ] **Fase 3 — Upload da nota (Storage)** — captura de foto mobile, upload seguro, registro pendente.
 - [ ] **Fase 4 — Pipeline n8n + Claude** — OCR/leitura do valor, dedupe, crédito via service_role.
 - [~] **Fase 5 — Frontend cliente (Next.js)** — visual base pronto: telas **Início** (`/`, saldo/nível/ações/atividade) e **Resgatar** (`/resgatar`, teclado funcional). Stubs de `/historico` e `/recompensas`. Dados ainda MOCK (`src/lib/mock.ts`) — falta plugar Supabase (depende da Fase 2 auth).
