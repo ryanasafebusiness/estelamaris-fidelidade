@@ -38,6 +38,25 @@ body {
   backdrop-filter: blur(8px);
   border: 1px solid var(--color-line);
 }
+
+/* Dark mode (aplicado via classe .dark no layout) */
+.dark {
+  --color-ink: #f8fafc;
+  --color-muted: #94a3b8;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --shadow-soft: 0 8px 30px -10px rgba(0, 0, 0, 0.8);
+  background: linear-gradient(160deg, #0b0f19 0%, #111827 50%, #0f172a 100%);
+  color: var(--color-ink);
+}
+.dark .glass {
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+/* Inverte logo escuro para branco no dark mode */
+.dark img[src*="logo-pontos"] {
+  filter: brightness(0) invert(1);
+}
 .brand-grad {
   background: linear-gradient(135deg, var(--color-red), var(--color-blue));
   -webkit-background-clip: text;
