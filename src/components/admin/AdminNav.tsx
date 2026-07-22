@@ -44,12 +44,30 @@ function Ticket(p: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+function Users(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" {...s} {...p}>
+      <circle cx="9" cy="8" r="3.2" />
+      <path d="M3 20c0-3.2 2.7-5.5 6-5.5s6 2.3 6 5.5M16 5.2a3 3 0 010 5.6M21 20c0-2.5-1.6-4.3-4-5" />
+    </svg>
+  );
+}
+function Cog(p: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" {...s} {...p}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1" />
+    </svg>
+  );
+}
 
 const items = [
   { href: "/admin", label: "Dashboard", Icon: Dash },
   { href: "/admin/notas", label: "Notas", Icon: Receipt },
+  { href: "/admin/clientes", label: "Clientes", Icon: Users },
   { href: "/admin/catalogo", label: "Catálogo", Icon: Gift },
   { href: "/admin/resgates", label: "Resgates", Icon: Ticket },
+  { href: "/admin/config", label: "Config", Icon: Cog },
 ];
 
 export default function AdminNav({ variant }: { variant: "side" | "top" }) {

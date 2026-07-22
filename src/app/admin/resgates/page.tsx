@@ -4,6 +4,7 @@ import { useState, useEffect, useActionState } from "react";
 import { adminMarkRedemptionUsed } from "@/app/actions/admin";
 import type { AdminFormState } from "@/app/actions/admin";
 import { createClient } from "@/lib/supabase/client";
+import Comprovante, { type ComprovanteData } from "@/components/admin/Comprovante";
 
 type Redemption = {
   id: string;
@@ -15,7 +16,7 @@ type Redemption = {
   used_at: string | null;
   user_id: string;
   profiles?: { nome: string | null } | null;
-  rewards?: { titulo: string } | null;
+  rewards?: { titulo: string; valor_reais: number } | null;
 };
 
 export default function AdminResgatesPage() {
@@ -23,6 +24,7 @@ export default function AdminResgatesPage() {
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [comprovante, setComprovante] = useState<ComprovanteData | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [markState, markAction, markPending] = useActionState(
     async (prev: AdminFormState, formData: FormData) => {
@@ -37,7 +39,7 @@ export default function AdminResgatesPage() {
     let cancelled = false;
     supabase
       .from("redemptions")
-      .select("*, profiles(nome), rewards(titulo)")
+      .select("*, profiles(nome), rewards(titulo, valor_reais)")
       .order("created_at", { ascending: false })
       .limit(200)
       .then(({ data }) => {
@@ -138,8 +140,25 @@ export default function AdminResgatesPage() {
             {!loading &&
               filtered.map((r) => (
                 <tr key={r.id} className="border-b border-line transition-colors hover:bg-ink/[0.02]">
-                  <td className="px-4 py-3 font-mono text-[13px] font-bold tracking-wider text-ink">
-                    {r.codigo}
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() =>
+                        setComprovante({
+                          codigo: r.codigo,
+                          reward: r.rewards?.titulo || "Recompensa",
+                          valor_reais: r.rewards?.valor_reais ?? 0,
+                          custo_pontos: r.custo_pontos,
+                          cliente: r.profiles?.nome || "—",
+                          status: r.status,
+                          created_at: r.created_at,
+                          expires_at: r.expires_at,
+                          used_at: r.used_at,
+                        })
+                      }
+                      className="font-mono text-[13px] font-bold tracking-wider text-blue hover:underline"
+                    >
+                      {r.codigo}
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-[13px] text-ink/70">{r.profiles?.nome || "—"}</td>
                   <td className="px-4 py-3 text-[13px] text-ink/70">{r.rewards?.titulo || "—"}</td>
@@ -169,6 +188,8 @@ export default function AdminResgatesPage() {
           </tbody>
         </table>
       </div>
+
+      {comprovante && <Comprovante data={comprovante} onClose={() => setComprovante(null)} />}
     </div>
   );
 }

@@ -130,6 +130,7 @@ export async function adminCreateReward(
   const titulo = String(formData.get("titulo") ?? "").trim();
   const descricao = String(formData.get("descricao") ?? "").trim();
   const custo = parseInt(String(formData.get("custo_pontos") ?? "0"), 10);
+  const valorReais = parseFloat(String(formData.get("valor_reais") ?? "0")) || 0;
 
   if (!titulo) return { error: "Informe o título." };
   if (custo <= 0) return { error: "Custo deve ser maior que zero." };
@@ -139,6 +140,7 @@ export async function adminCreateReward(
     titulo,
     descricao: descricao || null,
     custo_pontos: custo,
+    valor_reais: valorReais,
     ativo: true,
   });
 
@@ -161,6 +163,7 @@ export async function adminUpdateReward(
   const titulo = String(formData.get("titulo") ?? "").trim();
   const descricao = String(formData.get("descricao") ?? "").trim();
   const custo = parseInt(String(formData.get("custo_pontos") ?? "0"), 10);
+  const valorReais = parseFloat(String(formData.get("valor_reais") ?? "0")) || 0;
 
   if (!id) return { error: "ID inválido." };
   if (!titulo) return { error: "Informe o título." };
@@ -169,7 +172,7 @@ export async function adminUpdateReward(
   const admin = createAdminClient();
   const { error } = await admin
     .from("rewards")
-    .update({ titulo, descricao: descricao || null, custo_pontos: custo })
+    .update({ titulo, descricao: descricao || null, custo_pontos: custo, valor_reais: valorReais })
     .eq("id", id);
 
   if (error) return { error: error.message };
@@ -240,63 +243,30 @@ export async function adminMarkRedemptionUsed(
 // DASHBOARD — métricas
 // ────────────────────────────────────────────────────────────────────
 export type DashboardMetrics = {
-  totalClientes: number;
-  notasHoje: number;
-  notasPendentes: number;
-  pontosCredTotal: number;
-  pontosDebTotal: number;
-  notasPorDia: { dia: string; count: number }[];
+  clientes_total: number;
+  clientes_ativos: number;
+  notas_aprovadas: number;
+  notas_pendentes: number;
+  notas_rejeitadas: number;
+  notas_hoje: number;
+  faturamento_total: number;
+  faturamento_mes: number;
+  ticket_medio: number;
+  pontos_creditados: number;
+  pontos_resgatados: number;
+  pontos_em_circulacao: number;
+  resgates_ativos: number;
+  resgates_usados: number;
+  custo_descontos: number;
+  custo_descontos_pendente: number;
+  notas_por_dia: { dia: string; count: number }[];
 };
 
 export async function adminGetDashboardMetrics(): Promise<DashboardMetrics> {
   await requireAdmin();
-  const admin = createAdminClient();
-
-  const today = new Date().toISOString().split("T")[0];
-
-  // Queries paralelas
-  const [clientesRes, hojRes, pendRes, credRes, debRes, porDiaRes] = await Promise.all([
-    admin.from("profiles").select("id", { count: "exact", head: true }),
-    admin.from("receipts").select("id", { count: "exact", head: true }).gte("created_at", today),
-    admin
-      .from("receipts")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "pendente"),
-    admin.from("points_ledger").select("pontos").eq("tipo", "credito"),
-    admin.from("points_ledger").select("pontos").eq("tipo", "debito"),
-    admin
-      .from("receipts")
-      .select("created_at")
-      .gte("created_at", new Date(Date.now() - 6 * 86400000).toISOString().split("T")[0])
-      .order("created_at", { ascending: true }),
-  ]);
-
-  const pontosCredTotal = (credRes.data ?? []).reduce(
-    (sum: number, r: { pontos: number }) => sum + r.pontos,
-    0,
-  );
-  const pontosDebTotal = Math.abs(
-    (debRes.data ?? []).reduce((sum: number, r: { pontos: number }) => sum + r.pontos, 0),
-  );
-
-  // Agrupa notas por dia nos últimos 7 dias
-  const dayMap: Record<string, number> = {};
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(Date.now() - i * 86400000).toISOString().split("T")[0];
-    dayMap[d] = 0;
-  }
-  (porDiaRes.data ?? []).forEach((r: { created_at: string }) => {
-    const d = r.created_at.split("T")[0];
-    if (d in dayMap) dayMap[d]++;
-  });
-  const notasPorDia = Object.entries(dayMap).map(([dia, count]) => ({ dia, count }));
-
-  return {
-    totalClientes: clientesRes.count ?? 0,
-    notasHoje: hojRes.count ?? 0,
-    notasPendentes: pendRes.count ?? 0,
-    pontosCredTotal,
-    pontosDebTotal,
-    notasPorDia,
-  };
+  // admin_metrics() usa is_admin() (auth.uid()) -> chamamos pelo client de sessão.
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_metrics");
+  if (error) throw new Error(error.message);
+  return data as DashboardMetrics;
 }
