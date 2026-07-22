@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
+    id: "fidelidade-estelamaris-client",
     name: "Estelamaris",
     short_name: "Estelamaris",
     description: "Programa de Pontos e Fidelidade Estelamaris",
