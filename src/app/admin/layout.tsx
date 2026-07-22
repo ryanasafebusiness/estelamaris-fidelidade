@@ -6,6 +6,7 @@ import AdminNav from "@/components/admin/AdminNav";
 export const metadata: Metadata = {
   title: "Estelamaris Admin",
   description: "Painel administrativo do programa de pontos Estelamaris.",
+  manifest: "/admin.webmanifest",
 };
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
