@@ -1,7 +1,7 @@
 /**
  * Helper de sessão para o middleware: refaz o refresh dos cookies do Supabase
  * e aplica a proteção de rotas. Rotas internas sem sessão → /login.
- * Rotas /admin/* exigem papel = 'admin' no profile.
+ * Rotas /admin/* exigem email = 'ryan@gmail.com'.
  */
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
@@ -62,15 +62,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Rota admin: verifica papel no profile.
+  // Rota admin: verifica email.
   if (user && isAdmin(pathname)) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("papel")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.papel !== "admin") {
+    if (user.email !== "ryan@gmail.com") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       url.search = "";

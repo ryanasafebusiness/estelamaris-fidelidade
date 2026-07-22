@@ -15,15 +15,8 @@ async function requireAdmin() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user || user.email !== "ryan@gmail.com") redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("papel")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || profile.papel !== "admin") redirect("/");
   return user;
 }
 
@@ -256,7 +249,7 @@ export async function adminGetDashboardMetrics(): Promise<DashboardMetrics> {
 
   // Queries paralelas
   const [clientesRes, hojRes, pendRes, credRes, debRes, porDiaRes] = await Promise.all([
-    admin.from("profiles").select("id", { count: "exact", head: true }).eq("papel", "cliente"),
+    admin.from("profiles").select("id", { count: "exact", head: true }),
     admin.from("receipts").select("id", { count: "exact", head: true }).gte("created_at", today),
     admin
       .from("receipts")

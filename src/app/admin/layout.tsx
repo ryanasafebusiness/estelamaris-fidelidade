@@ -17,15 +17,13 @@ export default async function AdminLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user || user.email !== "ryan@gmail.com") redirect("/");
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("nome, papel")
+    .select("nome")
     .eq("id", user.id)
     .single();
-
-  if (!profile || profile.papel !== "admin") redirect("/");
 
   return (
     <div className="flex min-h-dvh bg-[#0c1222]">
@@ -49,7 +47,7 @@ export default async function AdminLayout({
 
         <div className="mt-auto border-t border-white/5 pt-4">
           <div className="text-[13px] font-bold text-white/70 truncate">
-            {profile.nome || user.email}
+            {profile?.nome || user.email}
           </div>
           <Link
             href="/"

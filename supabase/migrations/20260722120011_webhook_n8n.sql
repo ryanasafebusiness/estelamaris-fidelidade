@@ -35,6 +35,9 @@ begin
 end;
 $fn$;
 
+-- Função de TRIGGER: não deve ser chamável via RPC (advisor 0028/0029).
+revoke all on function public.estelamaris_notify_n8n() from public, anon, authenticated;
+
 drop trigger if exists estelamaris_receipt_inserted on public.receipts;
 create trigger estelamaris_receipt_inserted
   after insert on public.receipts
