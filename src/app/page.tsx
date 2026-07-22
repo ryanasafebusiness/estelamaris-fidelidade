@@ -1,20 +1,58 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import BottomNav from "@/components/BottomNav";
-import {
-  User,
-  Gear,
-  StarSolid,
-  ArrowUp,
-  Plus,
-  Camera,
-  Swap,
-  History,
-  Dots,
-  Receipt,
-} from "@/components/icons";
-import { perfil, atividade, fmtPts, type Movimento } from "@/lib/mock";
+import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt } from "@/components/icons";
 
-export default function HomePage() {
+type Movimento = { id: number; tipo: string; pontos: number; descricao: string | null; created_at: string };
+
+function fmtPts(n: number) {
+  return n.toLocaleString("pt-BR");
+}
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function fmtData(iso: string) {
+  const d = new Date(iso);
+  const hoje = new Date();
+  const mesmoDia = d.toDateString() === hoje.toDateString();
+  const hora = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  if (mesmoDia) return `Hoje · ${hora}`;
+  return `${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })} · ${hora}`;
+}
+
+export default async function HomePage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const inicioMes = new Date();
+  inicioMes.setDate(1);
+  inicioMes.setHours(0, 0, 0, 0);
+
+  const [{ data: profile }, { data: atividadeData }, { data: mesData }] = await Promise.all([
+    supabase.from("profiles").select("nome, nivel, pontos_saldo").eq("id", user.id).single(),
+    supabase
+      .from("points_ledger")
+      .select("id, tipo, pontos, descricao, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(8),
+    supabase
+      .from("points_ledger")
+      .select("pontos")
+      .eq("user_id", user.id)
+      .eq("tipo", "credito")
+      .gte("created_at", inicioMes.toISOString()),
+  ]);
+
+  const nivel = profile?.nivel ? capitalize(profile.nivel) : "Bronze";
+  const saldo = profile?.pontos_saldo ?? 0;
+  const esteMes = (mesData ?? []).reduce((s: number, r: { pontos: number }) => s + r.pontos, 0);
+  const atividade = (atividadeData ?? []) as Movimento[];
+
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-4 pb-2">
       {/* Top bar */}
@@ -29,6 +67,7 @@ export default function HomePage() {
 
         <div className="text-center leading-tight">
           <div className="flex items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo-pontos.png" alt="Estelamaris" className="h-8 w-auto object-contain" />
           </div>
           <small className="mt-px block text-[10.5px] font-semibold tracking-wide text-muted">
@@ -36,12 +75,13 @@ export default function HomePage() {
           </small>
         </div>
 
-        <button
+        <Link
+          href="/perfil"
           aria-label="Ajustes"
           className="glass flex h-[38px] w-[38px] items-center justify-center rounded-full text-ink"
         >
           <Gear />
-        </button>
+        </Link>
       </header>
 
       {/* Pílulas: nível / este mês / enviar */}
@@ -52,7 +92,7 @@ export default function HomePage() {
           </span>
           <div>
             <div className="text-[10.5px] font-semibold leading-none text-muted">Nível</div>
-            <div className="mt-0.5 text-[13.5px] font-extrabold leading-tight">{perfil.nivel}</div>
+            <div className="mt-0.5 text-[13.5px] font-extrabold leading-tight">{nivel}</div>
           </div>
         </div>
 
@@ -62,9 +102,7 @@ export default function HomePage() {
           </span>
           <div>
             <div className="text-[10.5px] font-semibold leading-none text-muted">Este mês</div>
-            <div className="mt-0.5 text-[13.5px] font-extrabold leading-tight">
-              +{perfil.esteMes} pts
-            </div>
+            <div className="mt-0.5 text-[13.5px] font-extrabold leading-tight">+{esteMes} pts</div>
           </div>
         </div>
 
@@ -81,7 +119,7 @@ export default function HomePage() {
       <section className="mt-6 text-center">
         <div className="text-[12.5px] font-semibold tracking-wide text-muted">Saldo de pontos</div>
         <div className="mt-1.5 text-[52px] font-extrabold leading-none tracking-tighter">
-          {fmtPts(perfil.saldo)}
+          {fmtPts(saldo)}
           <span className="ml-1.5 text-[20px] font-bold tracking-normal text-muted">pts</span>
         </div>
       </section>
@@ -97,7 +135,7 @@ export default function HomePage() {
         <ActionButton label="Histórico" href="/historico">
           <History />
         </ActionButton>
-        <ActionButton label="Mais">
+        <ActionButton label="Mais" href="/perfil">
           <Dots />
         </ActionButton>
       </section>
@@ -114,6 +152,11 @@ export default function HomePage() {
       </section>
 
       <section className="no-scrollbar mt-2 flex flex-col gap-2 overflow-auto pb-1.5">
+        {atividade.length === 0 && (
+          <div className="glass rounded-[20px] p-5 text-center text-[13px] font-medium text-muted shadow-soft">
+            Nenhuma atividade ainda. Envie sua primeira nota para ganhar pontos.
+          </div>
+        )}
         {atividade.map((m) => (
           <ActivityRow key={m.id} m={m} />
         ))}
@@ -162,6 +205,7 @@ function ActionButton({
 
 function ActivityRow({ m }: { m: Movimento }) {
   const pos = m.pontos >= 0;
+  const titulo = m.descricao || (pos ? "Crédito de pontos" : "Resgate");
   return (
     <div className="glass flex items-center gap-3.5 rounded-[20px] p-3 shadow-soft transition-transform hover:-translate-y-0.5">
       <span
@@ -172,8 +216,8 @@ function ActivityRow({ m }: { m: Movimento }) {
         {pos ? <Receipt width={20} height={20} /> : <Swap width={20} height={20} />}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[14.5px] font-bold text-ink">{m.titulo}</div>
-        <div className="mt-0.5 text-[12px] font-medium text-muted">{m.sub}</div>
+        <div className="truncate text-[14.5px] font-bold text-ink">{titulo}</div>
+        <div className="mt-0.5 text-[12px] font-medium text-muted">{fmtData(m.created_at)}</div>
       </div>
       <div className={`text-[15px] font-extrabold ${pos ? "text-blue" : "text-red"}`}>
         {pos ? "+" : "−"}
