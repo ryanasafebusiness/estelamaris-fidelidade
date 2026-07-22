@@ -122,6 +122,13 @@ body {
   }
   
   /* Reset de cores para PB e Fontes Profissionais */
+  #printable-receipt {
+    transform: scale(0.8);
+    transform-origin: top center;
+    margin: 0 auto;
+    width: 100% !important;
+    max-width: 80mm !important;
+  }
   #printable-receipt .bg-gradient-to-b {
     background: transparent !important;
     color: black !important;

@@ -5,6 +5,7 @@ import { requireAuthAndProfile } from "@/app/actions/auth";
 import BottomNav from "@/components/BottomNav";
 import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt } from "@/components/icons";
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
+import ScannerButton from "@/components/ScannerButton";
 
 type Movimento = { id: number; tipo: string; pontos: number; descricao: string | null; created_at: string };
 
@@ -73,13 +74,7 @@ export default async function HomePage() {
           </small>
         </div>
 
-        <Link
-          href="/perfil"
-          aria-label="Ajustes"
-          className="glass flex h-[38px] w-[38px] items-center justify-center rounded-full text-ink"
-        >
-          <Gear />
-        </Link>
+        <ScannerButton />
       </header>
 
       {/* Pílulas: nível / este mês / enviar */}
