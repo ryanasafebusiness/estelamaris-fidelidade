@@ -121,18 +121,19 @@ body {
     display: none !important;
   }
   
-  /* Reset de cores para PB */
+  /* Reset de cores para PB e Fontes Profissionais */
   #printable-receipt .bg-gradient-to-b {
     background: transparent !important;
     color: black !important;
-    border-bottom: 1px dashed black !important;
-    padding-bottom: 15px !important;
+    border-bottom: 2px dashed black !important;
+    padding-bottom: 12px !important;
   }
   #printable-receipt * {
     color: black !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
   }
   #printable-receipt span[class*="bg-"] {
     background: transparent !important;
-    border: 1px solid black !important;
+    border: 1px dashed black !important;
   }
 }

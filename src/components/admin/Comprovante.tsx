@@ -77,6 +77,13 @@ export default function Comprovante({
           {data.used_at && <Row k="Usado em" v={dt(data.used_at)} />}
         </div>
 
+        {/* Rodapé exclusivo da impressão */}
+        <div className="hidden print:block border-t border-dashed border-line px-6 py-4 text-center text-[10px] uppercase font-bold leading-relaxed">
+          <p>Farmácia Estelamaris</p>
+          <p>Obrigado pela preferência!</p>
+          <p className="mt-2 text-[8px] opacity-70">SISTEMA DE FIDELIDADE</p>
+        </div>
+
         <div className="print-hide flex gap-2 px-6 pb-6 pt-2">
           <button
             onClick={() => window.print()}
