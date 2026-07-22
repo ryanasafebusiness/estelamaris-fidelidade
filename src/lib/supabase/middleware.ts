@@ -1,6 +1,7 @@
 /**
  * Helper de sessão para o middleware: refaz o refresh dos cookies do Supabase
  * e aplica a proteção de rotas. Rotas internas sem sessão → /login.
+ * Rotas /admin/* exigem papel = 'admin' no profile.
  */
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
@@ -10,6 +11,10 @@ const PUBLIC_PATHS = ["/login", "/cadastro"];
 
 function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+}
+
+function isAdmin(pathname: string): boolean {
+  return pathname === "/admin" || pathname.startsWith("/admin/");
 }
 
 export async function updateSession(request: NextRequest) {
@@ -57,5 +62,22 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Rota admin: verifica papel no profile.
+  if (user && isAdmin(pathname)) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("papel")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || profile.papel !== "admin") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+  }
+
   return response;
 }
+
