@@ -129,21 +129,29 @@ body {
   
   /* Reset de cores para PB e Fontes Profissionais */
   #printable-receipt {
-    transform: scale(0.8);
-    transform-origin: top center;
     margin: 0 auto;
     width: 100% !important;
-    max-width: 80mm !important;
+    max-width: 78mm !important; /* levemente menor que 80mm p/ evitar corte lateral */
+    font-size: 14pt !important; /* Fonte base maior */
   }
   #printable-receipt .bg-gradient-to-b {
     background: transparent !important;
     color: black !important;
     border-bottom: 2px dashed black !important;
-    padding-bottom: 12px !important;
+    padding-bottom: 15px !important;
   }
   #printable-receipt * {
     color: black !important;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+  /* Força o QR Code e imagens a não ficarem borrados na térmica */
+  #printable-receipt svg, #printable-receipt img {
+    width: 220px !important; 
+    height: 220px !important;
+    margin: 0 auto;
+    shape-rendering: crispEdges;
   }
   #printable-receipt span[class*="bg-"] {
     background: transparent !important;
