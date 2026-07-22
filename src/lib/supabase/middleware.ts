@@ -18,6 +18,15 @@ function isAdmin(pathname: string): boolean {
 }
 
 export async function updateSession(request: NextRequest) {
+  // Requisições de prefetch (o Next pré-carrega os links do menu ao entrarem
+  // na tela) não devem disparar refresh de sessão: chamadas concorrentes de
+  // refresh podem "queimar" o refresh token e derrubar o login à toa.
+  const isPrefetch =
+    request.headers.get("next-router-prefetch") || request.headers.get("purpose") === "prefetch";
+  if (isPrefetch) {
+    return NextResponse.next({ request });
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(

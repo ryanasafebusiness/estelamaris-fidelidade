@@ -64,9 +64,13 @@ begin
 
   -- Adiciona os pontos ao usuario
   update public.profiles
-  set pontos = pontos + v_voucher.pontos,
+  set pontos_saldo = pontos_saldo + v_voucher.pontos,
       pontos_acumulados = pontos_acumulados + v_voucher.pontos
   where id = v_user_id;
+
+  -- Registra no historico
+  insert into public.points_ledger (user_id, tipo, pontos, descricao)
+  values (v_user_id, 'credito', v_voucher.pontos, 'Cupom na loja');
 
   return true;
 end;

@@ -25,6 +25,12 @@
 body {
   color: var(--color-ink);
   min-height: 100dvh;
+  /* Ocupa atrás do notch/faixa de gestos (viewport-fit=cover) sem cortar
+     conteúdo: reserva o espaço das áreas seguras do aparelho/PWA. */
+  padding-top: env(safe-area-inset-top);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
   background:
     radial-gradient(60% 45% at 18% 12%, rgba(47, 91, 212, 0.14), transparent 70%),
     radial-gradient(55% 45% at 85% 20%, rgba(225, 29, 46, 0.13), transparent 70%),

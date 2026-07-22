@@ -13,11 +13,18 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: "cover",
+  themeColor: "#E11D2E",
 };
 
 export const metadata: Metadata = {
   title: "Estelamaris — Programa de pontos",
   description: "Envie a nota, ganhe pontos, troque por desconto. Farmácia Estelamaris.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Estelamaris",
+  },
 };
 
 export default function RootLayout({
