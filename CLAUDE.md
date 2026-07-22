@@ -9,9 +9,10 @@
 ## 1. Produto
 
 - App web **mobile-first** onde o **CLIENTE** tira foto da **nota fiscal (cupom)** da compra.
-- Uma **IA (Claude, via API Anthropic)** lê o **valor da nota**. O sistema **credita pontos**.
+- Uma **IA de visão (Groq)** lê o **valor e o estabelecimento da nota**. O sistema **credita pontos**
+  — só se a nota for da própria farmácia (ver Fase 4).
 - O cliente **troca pontos** por descontos/brindes.
-- **Single-tenant**: é uma farmácia só.
+- **Single-tenant**: é uma farmácia só — **Drogaria Estelamaris LTDA**, CNPJ `21.135.884/0001-61`.
 
 ---
 
@@ -35,6 +36,16 @@
    - **Nunca pelo client.**
 3. A **service_role key** só existe **no n8n e em rotas de servidor**. **Nunca** no client nem no repositório.
 4. **Toda nota tem `hash_dedupe` único** para impedir crédito duplicado da mesma nota.
+5. **Só credita nota da própria farmácia**: o n8n rejeita qualquer nota cujo CNPJ/nome do
+   estabelecimento não bata com a Estelamaris (ver Fase 4) — evita pontuar compras em concorrentes.
+
+> ⚠️ **Nota sobre o webhook do n8n:** o endpoint (`/webhook/estelamaris-nota`) não exige mais
+> segredo no header — é público, protegido só pelo path aleatório. Isso é seguro porque o endpoint
+> **não expõe nenhuma operação sensível diretamente**: qualquer chamada só dispara o pipeline
+> (baixa imagem, chama IA, tenta creditar), e todo crédito real passa pelas regras de negócio de
+> `credit_receipt` (dedupe, farmácia correta, valor válido) — não dá pra "injetar" pontos via
+> webhook forjado, só na melhor das hipóteses gastar cota de IA. Se isso virar um problema
+> (spam de chamadas), reative a checagem de segredo (`N8N_WEBHOOK_SECRET`, já implementada antes).
 
 ### Notas de Auth (Fase 2)
 - Cadastro/login: **e-mail + senha** (Supabase Auth). Nome/CPF/Telefone vão no `options.data`
@@ -124,7 +135,7 @@ Compra de R$ 137,80, cliente Prata:
 - [x] **Fase 1 — Modelo de dados (Supabase)** — migrations em `supabase/migrations/` (schema, RLS, funções SECURITY DEFINER, trigger de auth, storage, seeds, hardening). **Aplicadas no projeto `xyralczahmkmwlgronmd` via MCP.** Advisor limpo (só o WARN esperado de `redeem_reward`).
 - [x] **Fase 2 — Auth & fluxo do cliente** — cadastro/login e-mail+senha (Supabase Auth), Nome/CPF/Telefone salvos no profile via metadata→trigger, `proxy.ts` protege rotas internas, tela `/perfil` (edita nome/telefone). Testado end-to-end. Falta: plugar dados reais na Início.
 - [x] **Fase 3 — Upload da nota (Storage)** — tela `/enviar-nota`: captura/compressão da foto, upload em `notas/{uid}/`, insere receipt (só `user_id`+`storage_path`, status default). Realtime na `receipts` (migration 14) devolve o resultado (aprovada/rejeitada) do n8n. Depende do n8n ativo+credenciais para creditar.
-- [x] **Fase 4 — Pipeline n8n + IA** — workflow `estelamaris-processa-nota` no n8n (Railway, id `0o4VY1h10iqks9TR`), **publicado/ativo**. **IA trocada de Anthropic para Groq** (visão, `meta-llama/llama-4-scout-17b-16e-instruct`, API OpenAI-compatível, credencial `groqApi`). **Database Webhook via pg_net** (trigger `estelamaris_receipt_inserted`, migration 11). Falta: credencial **Supabase service_role** no n8n e `N8N_WEBHOOK_SECRET` no Railway.
+- [x] **Fase 4 — Pipeline n8n + IA** — workflow `estelamaris-processa-nota` no n8n (Railway, id `0o4VY1h10iqks9TR`), **publicado/ativo e testado ponta a ponta**. IA: **Groq** (`qwen/qwen3.6-27b`, visão, credencial `groqApi` "Groq account" — é *thinking model*, o parser remove `<think>` antes do JSON; `max_tokens: 1500`). Credencial Supabase `supabaseApi` "Farmacia" amarrada aos 5 nós. **Sem segredo no webhook** (endpoint público — decisão consciente, ver nota abaixo). **Verificação de farmácia sempre ativa**: só credita nota com CNPJ `21.135.884/0001-61` OU nome contendo "ESTELAMARIS"; outras farmácias são rejeitadas ("nota nao e da Estelamaris"). Testado com nota real (aprovada, 45 pts) e nota de outra farmácia (rejeitada). Database Webhook via pg_net (trigger `estelamaris_receipt_inserted`, migration 11) segue enviando o header `x-webhook-secret`, mas o n8n não confere mais (inofensivo, só não é checado).
 - [x] **Fase 5 — Frontend cliente (Next.js)** — **Início** (`/`) lê dados reais (perfil, saldo, nível, "este mês" e atividade do `points_ledger`). Sem mocks (mock.ts removido). Stub restante: `/historico`.
 - [x] **Fase 6 — Catálogo de recompensas & resgate** — `/resgatar` (catálogo → confirmação → código `EM-XXXXX` + QR), `/meus-resgates`, `/caixa` (validação + baixa, gate admin). Código único queimado no servidor (`redeem_reward` debita no resgate); Realtime em `redemptions` mostra "Usado ✓". Testado ponta a ponta. Pendências: expiração automática + (opcional) devolução de pontos; papel "operador" separado de admin para o caixa.
 - [ ] **Fase 7 — Admin & observabilidade** — moderação de notas, ajustes, logs.

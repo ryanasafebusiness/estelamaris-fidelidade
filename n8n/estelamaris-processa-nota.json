@@ -12,14 +12,6 @@
       "webhookId": "51295ded-e5e0-4b91-815a-a0d0e6316f5a"
     },
     {
-      "id": "5ef15ca9-d418-4867-84f2-3334ea17050f",
-      "name": "Confere segredo?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [240, 400],
-      "parameters": { "conditions": { "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 }, "conditions": [{ "leftValue": "={{ $json.headers[\"x-webhook-secret\"] }}", "operator": { "type": "string", "operation": "equals" }, "rightValue": "={{ $env.N8N_WEBHOOK_SECRET }}" }], "combinator": "and" } }
-    },
-    {
       "id": "19af3238-44f7-4f3c-b33b-42f8af405cd1",
       "name": "Prepara dados",
       "type": "n8n-nodes-base.set",
@@ -30,10 +22,11 @@
         { "id": "a2", "name": "user_id", "value": "={{ $json.body?.record?.user_id ?? $json.record?.user_id }}", "type": "string" },
         { "id": "a3", "name": "storage_path", "value": "={{ $json.body?.record?.storage_path ?? $json.record?.storage_path }}", "type": "string" },
         { "id": "a4", "name": "supabase_url", "value": "https://xyralczahmkmwlgronmd.supabase.co", "type": "string" },
-        { "id": "a5", "name": "modelo_ia", "value": "meta-llama/llama-4-scout-17b-16e-instruct", "type": "string" },
+        { "id": "a5", "name": "modelo_ia", "value": "qwen/qwen3.6-27b", "type": "string" },
         { "id": "a6", "name": "janela_dias", "value": 90, "type": "number" },
-        { "id": "a7", "name": "verificar_cnpj", "value": false, "type": "boolean" },
-        { "id": "a8", "name": "cnpj_farmacia", "value": "", "type": "string" }
+        { "id": "a7", "name": "verificar_farmacia", "value": true, "type": "boolean" },
+        { "id": "a8", "name": "cnpj_farmacia", "value": "21135884000161", "type": "string" },
+        { "id": "a9", "name": "nome_farmacia", "value": "ESTELAMARIS", "type": "string" }
       ] } }
     },
     {
@@ -78,7 +71,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.4,
       "position": [1680, 400],
-      "parameters": { "method": "POST", "url": "https://api.groq.com/openai/v1/chat/completions", "authentication": "predefinedCredentialType", "nodeCredentialType": "groqApi", "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "={{ { \"model\": $(\"Prepara dados\").item.json.modelo_ia, \"messages\": $json.messages, \"max_tokens\": 500, \"temperature\": 0 } }}", "options": {} },
+      "parameters": { "method": "POST", "url": "https://api.groq.com/openai/v1/chat/completions", "authentication": "predefinedCredentialType", "nodeCredentialType": "groqApi", "sendBody": true, "contentType": "json", "specifyBody": "json", "jsonBody": "={{ { \"model\": $(\"Prepara dados\").item.json.modelo_ia, \"messages\": $json.messages, \"max_tokens\": 1500, \"temperature\": 0 } }}", "options": {} },
       "onError": "continueErrorOutput"
     },
     {
@@ -87,7 +80,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [1920, 400],
-      "parameters": { "mode": "runOnceForAllItems", "language": "javaScript", "jsCode": "const raw = $input.first().json;\nlet text = '';\ntry { text = raw.choices[0].message.content || ''; } catch (err) { text = ''; }\nlet clean = String(text).trim();\nconst s = clean.indexOf('{'); const e2 = clean.lastIndexOf('}');\nif (s >= 0 && e2 > s) { clean = clean.slice(s, e2 + 1); }\nlet data = {}; let parseOk = true;\ntry { data = JSON.parse(clean); } catch (err) { parseOk = false; }\nconst cfg = $('Prepara dados').first().json;\nconst janela = Number(cfg.janela_dias) || 90;\nconst verificarCnpj = cfg.verificar_cnpj === true || cfg.verificar_cnpj === 'true';\nconst cnpjFarm = String(cfg.cnpj_farmacia || '').replace(/\\D/g, '');\nlet valido = true; let motivo = '';\nconst ehCupom = parseOk && data.eh_cupom_fiscal === true;\nconst valor = Number(data.valor_total);\nconst dataCompra = data.data_compra || null;\nconst estab = data.estabelecimento || null;\nconst cnpjDigits = String(data.cnpj || '').replace(/\\D/g, '');\nconst chave = data.chave_acesso ? String(data.chave_acesso).replace(/\\D/g, '') : '';\nif (!parseOk) { valido = false; motivo = 'nao consegui ler a nota'; }\nelse if (!ehCupom) { valido = false; motivo = 'imagem nao parece um cupom fiscal'; }\nelse if (!(valor > 0)) { valido = false; motivo = 'valor da nota ilegivel ou zerado'; }\nelse {\n  if (dataCompra) {\n    const d = new Date(dataCompra + 'T00:00:00Z');\n    const diff = (Date.now() - d.getTime()) / 86400000;\n    if (isFinite(diff) && diff > janela) { valido = false; motivo = 'nota fora do prazo de ' + janela + ' dias'; }\n    else if (isFinite(diff) && diff < -1) { valido = false; motivo = 'data da nota invalida'; }\n  }\n  if (valido && verificarCnpj && cnpjFarm && cnpjDigits !== cnpjFarm) { valido = false; motivo = 'nota nao e desta farmacia'; }\n}\nlet hash;\nif (chave && chave.length >= 20) { hash = 'chave:' + chave; }\nelse { hash = 'dados:' + cnpjDigits + '|' + (isFinite(valor) ? valor.toFixed(2) : '0') + '|' + (dataCompra || ''); }\nreturn [{ json: { valido: valido, motivo: motivo, valor_total: isFinite(valor) ? valor : null, data_compra: dataCompra, estabelecimento: estab, cnpj: cnpjDigits || null, chave_acesso: chave || null, hash_dedupe: hash, ai_raw: parseOk ? data : { erro: 'parse_failed', texto: text } } }];" },
+      "parameters": { "mode": "runOnceForAllItems", "language": "javaScript", "jsCode": "const raw = $input.first().json;\nlet text = '';\ntry { text = raw.choices[0].message.content || ''; } catch (err) { text = ''; }\nlet clean = String(text).trim();\nclean = clean.replace(/<think>[\\s\\S]*?<\\/think>/gi, '').trim();\nconst s = clean.indexOf('{'); const e2 = clean.lastIndexOf('}');\nif (s >= 0 && e2 > s) { clean = clean.slice(s, e2 + 1); }\nlet data = {}; let parseOk = true;\ntry { data = JSON.parse(clean); } catch (err) { parseOk = false; }\nconst cfg = $('Prepara dados').first().json;\nconst janela = Number(cfg.janela_dias) || 90;\nconst verificarFarmacia = cfg.verificar_farmacia === true || cfg.verificar_farmacia === 'true';\nconst cnpjFarm = String(cfg.cnpj_farmacia || '').replace(/\\D/g, '');\nconst nomeFarm = String(cfg.nome_farmacia || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');\nlet valido = true; let motivo = '';\nconst ehCupom = parseOk && data.eh_cupom_fiscal === true;\nconst valor = Number(data.valor_total);\nconst dataCompra = data.data_compra || null;\nconst estab = data.estabelecimento || null;\nconst cnpjDigits = String(data.cnpj || '').replace(/\\D/g, '');\nconst chave = data.chave_acesso ? String(data.chave_acesso).replace(/\\D/g, '') : '';\nif (!parseOk) { valido = false; motivo = 'nao consegui ler a nota'; }\nelse if (!ehCupom) { valido = false; motivo = 'imagem nao parece um cupom fiscal'; }\nelse if (!(valor > 0)) { valido = false; motivo = 'valor da nota ilegivel ou zerado'; }\nelse {\n  if (dataCompra) {\n    const d = new Date(dataCompra + 'T00:00:00Z');\n    const diff = (Date.now() - d.getTime()) / 86400000;\n    if (isFinite(diff) && diff > janela) { valido = false; motivo = 'nota fora do prazo de ' + janela + ' dias'; }\n    else if (isFinite(diff) && diff < -1) { valido = false; motivo = 'data da nota invalida'; }\n  }\n  if (valido && verificarFarmacia && (cnpjFarm || nomeFarm)) {\n    const estabNorm = String(estab || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');\n    const cnpjBate = cnpjFarm && cnpjDigits && cnpjDigits === cnpjFarm;\n    const nomeBate = nomeFarm && estabNorm.includes(nomeFarm);\n    if (!cnpjBate && !nomeBate) { valido = false; motivo = 'nota nao e da Estelamaris'; }\n  }\n}\nlet hash;\nif (chave && chave.length >= 20) { hash = 'chave:' + chave; }\nelse { hash = 'dados:' + cnpjDigits + '|' + (isFinite(valor) ? valor.toFixed(2) : '0') + '|' + (dataCompra || ''); }\nreturn [{ json: { valido: valido, motivo: motivo, valor_total: isFinite(valor) ? valor : null, data_compra: dataCompra, estabelecimento: estab, cnpj: cnpjDigits || null, chave_acesso: chave || null, hash_dedupe: hash, ai_raw: parseOk ? data : { erro: 'parse_failed', texto: text } } }];" },
       "onError": "continueErrorOutput"
     },
     {
@@ -145,12 +138,11 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [-50, 350],
-      "parameters": { "content": "Estelamaris - Processa nota. Gatilho: Supabase DB Webhook no INSERT de receipts. Segredo no header x-webhook-secret. Credenciais: Supabase service_role (supabaseApi) e Groq (groqApi). Modelo de visao (Llama 4 Scout) e parametros editaveis no no Prepara dados.", "color": 4, "width": 540, "height": 200 }
+      "parameters": { "content": "Estelamaris - Processa nota. Gatilho: Supabase DB Webhook no INSERT de receipts (endpoint publico, sem segredo no header). Credenciais: Supabase service_role (supabaseApi, credencial 'Farmacia') e Groq (groqApi, credencial 'Groq account'). Modelo de visao: Qwen 3.6 27B (thinking model - o parser remove o bloco <think> antes de ler o JSON). So credita nota com CNPJ 21.135.884/0001-61 OU nome contendo 'ESTELAMARIS' (config no no Prepara dados). Testado ponta a ponta com nota real + nota de outra farmacia em 22/07/2026 - ambos os caminhos (aprova/rejeita) confirmados.", "color": 4, "width": 620, "height": 260 }
     }
   ],
   "connections": {
-    "Webhook - Nova nota": { "main": [[{ "node": "Confere segredo?", "type": "main", "index": 0 }]] },
-    "Confere segredo?": { "main": [[{ "node": "Prepara dados", "type": "main", "index": 0 }], [{ "node": "Responde 401", "type": "main", "index": 0 }]] },
+    "Webhook - Nova nota": { "main": [[{ "node": "Prepara dados", "type": "main", "index": 0 }]] },
     "Prepara dados": { "main": [[{ "node": "Marca processando", "type": "main", "index": 0 }]] },
     "Marca processando": { "main": [[{ "node": "Gera signed URL", "type": "main", "index": 0 }], [{ "node": "Rejeita (erro geral)", "type": "main", "index": 0 }]] },
     "Gera signed URL": { "main": [[{ "node": "Baixa imagem", "type": "main", "index": 0 }], [{ "node": "Rejeita (erro geral)", "type": "main", "index": 0 }]] },
