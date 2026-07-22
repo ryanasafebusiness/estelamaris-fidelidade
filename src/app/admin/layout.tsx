@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import AdminNav from "@/components/admin/AdminNav";
+import ThemeToggle from "@/components/ThemeToggle";
 export const metadata: Metadata = {
   title: "Estelamaris Admin",
   description: "Painel administrativo do programa de pontos Estelamaris.",
@@ -24,7 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!profile || profile.papel !== "admin") redirect("/");
 
   return (
-    <div className="dark flex min-h-dvh flex-col md:flex-row">
+    <div className="flex min-h-dvh flex-col md:flex-row bg-surface text-ink">
       {/* Sidebar (desktop) */}
       <aside className="glass sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-line px-4 py-6 md:flex">
         <div className="mb-8 flex flex-col gap-1 px-1">
@@ -34,16 +35,22 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
         <AdminNav variant="side" />
 
-        <div className="mt-auto border-t border-line pt-4">
-          <div className="truncate text-[13px] font-bold text-ink">
-            {profile?.nome || user.email}
+        <div className="mt-auto border-t border-line pt-4 flex flex-col gap-3">
+          <div>
+            <div className="truncate text-[13px] font-bold text-ink">
+              {profile?.nome || user.email}
+            </div>
+            <Link
+              href="/"
+              className="mt-1 block text-[12px] font-semibold text-muted transition-colors hover:text-ink"
+            >
+              ← Voltar ao app
+            </Link>
           </div>
-          <Link
-            href="/"
-            className="mt-2 block text-[12px] font-semibold text-muted transition-colors hover:text-ink"
-          >
-            ← Voltar ao app
-          </Link>
+          <div className="flex items-center gap-2 border-t border-line pt-2">
+            <span className="text-[12px] font-semibold text-muted">Tema:</span>
+            <ThemeToggle />
+          </div>
         </div>
       </aside>
 
@@ -56,15 +63,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               Admin
             </span>
           </div>
-          <Link href="/" className="text-[12px] font-bold text-blue">
-            ← App
-          </Link>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Link href="/" className="text-[12px] font-bold text-blue">
+              ← App
+            </Link>
+          </div>
         </div>
         <AdminNav variant="top" />
       </header>
 
       {/* Content */}
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
+      <main className="mx-auto w-full max-w-full flex-1 px-4 py-5 sm:px-6 md:px-8 md:py-8">
         {children}
       </main>
     </div>
