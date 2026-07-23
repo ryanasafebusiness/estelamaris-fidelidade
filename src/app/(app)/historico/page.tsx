@@ -34,13 +34,9 @@ export default async function HistoricoPage() {
       {/* Top bar */}
       <header className="flex items-center justify-center pt-6 pb-8">
         <div className="flex flex-col items-center leading-tight">
-          <div className="flex items-center justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <Image src="/logo-pontos.png" alt="Estelamaris" width={110} height={32} className="h-8 w-auto object-contain" priority />
+          <div className="text-[16px] font-extrabold tracking-tight text-ink">
+            Drogaria Estelamaris
           </div>
-          <small className="mt-1 block text-[10.5px] font-semibold tracking-wide text-muted">
-            Programa de pontos
-          </small>
         </div>
       </header>
 

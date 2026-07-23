@@ -17,12 +17,9 @@ export default function AuthShell({
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-5 pb-8">
       <div className="flex flex-col items-center pt-12">
-        <Link href="/" className="flex items-center justify-center">
-          <Image src="/logo-pontos.png" alt="Estelamaris" width={140} height={40} className="h-10 w-auto object-contain" priority />
+        <Link href="/" className="text-[20px] font-extrabold tracking-tight text-ink">
+          Drogaria Estelamaris
         </Link>
-        <p className="mt-1 text-[12px] font-semibold tracking-wide text-muted">
-          Programa de pontos
-        </p>
       </div>
 
       <div className="glass mt-8 rounded-[26px] p-5 shadow-glass">

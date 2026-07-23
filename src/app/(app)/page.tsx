@@ -66,12 +66,9 @@ export default async function HomePage() {
         </Link>
 
         <div className="text-center leading-tight">
-          <div className="flex items-center justify-center">
-            <Image src="/logo-pontos.png" alt="Estelamaris" width={110} height={32} className="h-8 w-auto object-contain" priority />
+          <div className="text-[16px] font-extrabold tracking-tight text-ink">
+            Drogaria Estelamaris
           </div>
-          <small className="mt-px block text-[10.5px] font-semibold tracking-wide text-muted">
-            Programa de pontos
-          </small>
         </div>
 
         <ScannerButton />
