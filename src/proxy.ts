@@ -2,6 +2,15 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  // Requisições de prefetch (o Next pré-carrega os links do menu/rota ao passar
+  // o mouse ou montar a tela) não precisam de refresh de sessão — isso evitava
+  // que toda troca de página esperasse uma chamada de rede ao Supabase Auth.
+  const isPrefetch =
+    request.headers.get("next-router-prefetch") || request.headers.get("purpose") === "prefetch";
+  if (isPrefetch) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
