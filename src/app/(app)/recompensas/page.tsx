@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Close } from "@/components/icons";
+import { Close, TicketPercent } from "@/components/icons";
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
 import BottomNav from "@/components/BottomNav";
 import CodigoResgate, { type Resgate } from "@/components/CodigoResgate";
@@ -121,21 +121,24 @@ export default function ResgatarPage() {
               const falta = saldo !== null ? r.custo_pontos - saldo : 0;
               return (
                 <AnimatedItem key={r.id} className="glass rounded-2xl p-4 shadow-soft">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red/10 text-red">
+                      <TicketPercent />
+                    </span>
                     <div className="min-w-0 flex-1">
-                      <div className="text-[15px] font-extrabold text-ink">{r.titulo}</div>
+                      <div className="truncate text-[15px] font-extrabold text-ink">{r.titulo}</div>
                       {r.descricao && (
-                        <div className="mt-0.5 text-[12px] text-muted">{r.descricao}</div>
+                        <div className="mt-0.5 truncate text-[12px] text-muted">{r.descricao}</div>
                       )}
-                      <div className="mt-1 text-[12px] font-semibold text-blue">
+                      <div className="mt-1 text-[12.5px] font-extrabold text-red">
                         {brl(r.valor_reais)} de desconto
                       </div>
                     </div>
-                    <div className="shrink-0 text-right">
-                      <div className="text-[15px] font-extrabold text-ink">
+                    <div className="shrink-0 rounded-2xl bg-ink/5 px-3.5 py-2 text-center">
+                      <div className="text-[16px] font-extrabold leading-none text-ink">
                         {fmt(r.custo_pontos)}
                       </div>
-                      <div className="text-[10.5px] font-medium text-muted">pontos</div>
+                      <div className="mt-1 text-[10px] font-semibold text-muted">pontos</div>
                     </div>
                   </div>
                   <button
@@ -144,7 +147,7 @@ export default function ResgatarPage() {
                       setErro(null);
                       setConfirmando(r);
                     }}
-                    className={`mt-3 w-full rounded-xl py-3 text-[14px] font-extrabold transition-colors ${
+                    className={`mt-3.5 w-full rounded-xl py-3 text-[14px] font-extrabold transition-colors ${
                       podeResgatar
                         ? "bg-gradient-to-b from-red to-red-deep text-white shadow-red"
                         : "cursor-not-allowed bg-ink/5 text-muted"

@@ -169,3 +169,13 @@ export function NavDoc(p: P) {
     </svg>
   );
 }
+
+/** Ícone de ticket/cupom de desconto (card de recompensa). */
+export function TicketPercent(p: P) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" {...stroke} {...p}>
+      <path d="M3 9.5A2.5 2.5 0 0 1 5.5 7h13A2.5 2.5 0 0 1 21 9.5V11a1.5 1.5 0 0 0 0 2v1.5A2.5 2.5 0 0 1 18.5 17h-13A2.5 2.5 0 0 1 3 14.5V13a1.5 1.5 0 0 0 0-2z" />
+      <path d="m10 9 4 6M10.2 10.5h.01M13.8 13.5h.01" strokeWidth={2.1} />
+    </svg>
+  );
+}
