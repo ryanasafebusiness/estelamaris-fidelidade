@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Comprovante, { type ComprovanteData } from "@/components/admin/Comprovante";
+import ReceiptDetailModal from "@/components/admin/ReceiptDetailModal";
 import Spinner from "@/components/Spinner";
 
 type Cliente = {
@@ -28,7 +29,14 @@ type Receipt = {
   valor: number | null;
   pontos_gerados: number;
   estabelecimento: string | null;
+  cnpj: string | null;
+  chave_acesso: string | null;
+  data_compra: string | null;
+  motivo_rejeicao: string | null;
+  storage_path: string | null;
+  ai_result: Record<string, unknown> | null;
   created_at: string;
+  processed_at: string | null;
 };
 type Redemption = {
   id: string;
@@ -148,6 +156,7 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
   const [loading, setLoading] = useState(true);
   const [comprovante, setComprovante] = useState<ComprovanteData | null>(null);
+  const [detalheNota, setDetalheNota] = useState<Receipt | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -160,7 +169,9 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
         .limit(100),
       supabase
         .from("receipts")
-        .select("id, status, valor, pontos_gerados, estabelecimento, created_at")
+        .select(
+          "id, status, valor, pontos_gerados, estabelecimento, cnpj, chave_acesso, data_compra, motivo_rejeicao, storage_path, ai_result, created_at, processed_at",
+        )
         .eq("user_id", cliente.id)
         .order("created_at", { ascending: false })
         .limit(50),
@@ -273,7 +284,11 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
             <div className="space-y-2">
               {receipts.length === 0 && <Empty>Sem notas.</Empty>}
               {receipts.map((r) => (
-                <div key={r.id} className="flex items-center gap-3 rounded-xl border border-line p-3">
+                <button
+                  key={r.id}
+                  onClick={() => setDetalheNota(r)}
+                  className="flex w-full items-center gap-3 rounded-xl border border-line p-3 text-left transition-colors hover:bg-ink/[0.02]"
+                >
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[13px] font-bold text-ink">
                       {r.estabelecimento || "Nota"} · {r.valor ? brl(r.valor) : "—"}
@@ -285,7 +300,7 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
                   {r.pontos_gerados > 0 && (
                     <div className="text-[14px] font-extrabold text-blue">+{fmt(r.pontos_gerados)}</div>
                   )}
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -329,6 +344,14 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
       </div>
 
       {comprovante && <Comprovante data={comprovante} onClose={() => setComprovante(null)} />}
+
+      {detalheNota && (
+        <ReceiptDetailModal
+          receipt={detalheNota}
+          cliente={{ nome: cliente.nome, cpf: cliente.cpf, telefone: cliente.telefone }}
+          onClose={() => setDetalheNota(null)}
+        />
+      )}
     </div>
   );
 }

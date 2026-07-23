@@ -5,6 +5,7 @@ import { adminApproveReceipt, adminRejectReceipt } from "@/app/actions/admin";
 import type { AdminFormState } from "@/app/actions/admin";
 import { createClient } from "@/lib/supabase/client";
 import Spinner from "@/components/Spinner";
+import ReceiptDetailModal from "@/components/admin/ReceiptDetailModal";
 
 type Receipt = {
   id: string;
@@ -12,12 +13,16 @@ type Receipt = {
   valor: number | null;
   pontos_gerados: number;
   estabelecimento: string | null;
+  cnpj: string | null;
+  chave_acesso: string | null;
+  data_compra: string | null;
   motivo_rejeicao: string | null;
   storage_path: string | null;
   ai_result: Record<string, unknown> | null;
   created_at: string;
+  processed_at: string | null;
   user_id: string;
-  profiles?: { nome: string | null } | null;
+  profiles?: { nome: string | null; cpf: string | null; telefone: string | null } | null;
 };
 
 export default function AdminNotasPage() {
@@ -27,6 +32,7 @@ export default function AdminNotasPage() {
   const [loading, setLoading] = useState(true);
   const [modalReceipt, setModalReceipt] = useState<Receipt | null>(null);
   const [modalType, setModalType] = useState<"approve" | "reject" | null>(null);
+  const [detalhe, setDetalhe] = useState<Receipt | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -36,7 +42,7 @@ export default function AdminNotasPage() {
     async function fetchReceipts() {
       let query = supabase
         .from("receipts")
-        .select("*, profiles(nome)")
+        .select("*, profiles(nome, cpf, telefone)")
         .order("created_at", { ascending: false })
         .limit(100);
       if (filter !== "todas") query = query.eq("status", filter);
@@ -102,7 +108,11 @@ export default function AdminNotasPage() {
           receipts.map((r) => (
             <div key={r.id} className="glass rounded-2xl p-3 shadow-soft sm:p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <div className="flex min-w-0 flex-1 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDetalhe(r)}
+                  className="flex min-w-0 flex-1 gap-3 text-left"
+                >
                   {/* Thumbnail */}
                   <div className="h-[80px] w-[60px] shrink-0 overflow-hidden rounded-xl bg-ink/5">
                     {imageUrls[r.id] ? (
@@ -143,7 +153,7 @@ export default function AdminNotasPage() {
                       </div>
                     )}
                     {r.ai_result && (
-                      <details className="mt-1">
+                      <details className="mt-1" onClick={(e) => e.stopPropagation()}>
                         <summary className="cursor-pointer text-[11px] text-muted hover:text-ink">
                           Ver dados da IA
                         </summary>
@@ -153,7 +163,7 @@ export default function AdminNotasPage() {
                       </details>
                     )}
                   </div>
-                </div>
+                </button>
 
                 {/* Ações */}
                 {r.status === "pendente" && (
@@ -192,6 +202,18 @@ export default function AdminNotasPage() {
             setModalType(null);
             setRefreshKey((k) => k + 1);
           }}
+        />
+      )}
+
+      {detalhe && (
+        <ReceiptDetailModal
+          receipt={detalhe}
+          cliente={{
+            nome: detalhe.profiles?.nome ?? null,
+            cpf: detalhe.profiles?.cpf ?? null,
+            telefone: detalhe.profiles?.telefone ?? null,
+          }}
+          onClose={() => setDetalhe(null)}
         />
       )}
     </div>
