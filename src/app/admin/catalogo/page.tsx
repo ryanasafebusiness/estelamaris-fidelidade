@@ -4,6 +4,7 @@ import { useState, useEffect, useActionState } from "react";
 import { adminCreateReward, adminUpdateReward, adminToggleReward } from "@/app/actions/admin";
 import type { AdminFormState } from "@/app/actions/admin";
 import { createClient } from "@/lib/supabase/client";
+import Spinner from "@/components/Spinner";
 
 type Reward = {
   id: string;
@@ -111,7 +112,7 @@ export default function AdminCatalogoPage() {
       )}
 
       <div className="mt-4 space-y-2">
-        {loading && <div className="py-8 text-center text-[13px] text-muted">Carregando…</div>}
+        {loading && <Spinner label="Carregando…" />}
         {rewards.map((r) => (
           <RewardRow
             key={r.id}

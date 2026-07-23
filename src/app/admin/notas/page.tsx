@@ -4,6 +4,7 @@ import { useState, useActionState, useEffect } from "react";
 import { adminApproveReceipt, adminRejectReceipt } from "@/app/actions/admin";
 import type { AdminFormState } from "@/app/actions/admin";
 import { createClient } from "@/lib/supabase/client";
+import Spinner from "@/components/Spinner";
 
 type Receipt = {
   id: string;
@@ -94,7 +95,7 @@ export default function AdminNotasPage() {
 
       {/* Lista */}
       <div className="mt-5 space-y-3">
-        {loading && <Empty>Carregando…</Empty>}
+        {loading && <Spinner label="Carregando…" />}
         {!loading && receipts.length === 0 && <Empty>Nenhuma nota encontrada.</Empty>}
 
         {!loading &&

@@ -4,6 +4,7 @@ import { useState, useEffect, useActionState } from "react";
 import { adminUpdateConfig } from "@/app/actions/admin";
 import type { AdminFormState } from "@/app/actions/admin";
 import { createClient } from "@/lib/supabase/client";
+import Spinner from "@/components/Spinner";
 
 type Config = {
   pontos_por_real: number;
@@ -149,7 +150,7 @@ export default function AdminConfigPage() {
           </div>
         )}
 
-        {loading && <div className="mt-4 text-[13px] text-muted">Carregando…</div>}
+        {loading && <Spinner label="Carregando…" />}
 
         {config && (
           <form action={action} className="mt-4 space-y-4">

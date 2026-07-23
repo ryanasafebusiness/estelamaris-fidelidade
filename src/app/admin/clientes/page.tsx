@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Comprovante, { type ComprovanteData } from "@/components/admin/Comprovante";
+import Spinner from "@/components/Spinner";
 
 type Cliente = {
   id: string;
@@ -96,7 +97,7 @@ export default function AdminClientesPage() {
       />
 
       <div className="mt-4 space-y-2">
-        {loading && <div className="py-8 text-center text-[13px] text-muted">Carregando…</div>}
+        {loading && <Spinner label="Carregando…" />}
         {!loading && filtered.length === 0 && (
           <div className="py-8 text-center text-[13px] text-muted">Nenhum cliente.</div>
         )}
@@ -243,7 +244,7 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
 
         {/* Body */}
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
-          {loading && <div className="py-8 text-center text-[13px] text-muted">Carregando…</div>}
+          {loading && <Spinner label="Carregando…" />}
 
           {!loading && tab === "extrato" && (
             <div className="space-y-2">

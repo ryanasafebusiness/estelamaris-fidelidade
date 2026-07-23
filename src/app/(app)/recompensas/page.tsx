@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Close, TicketPercent } from "@/components/icons";
+import Spinner from "@/components/Spinner";
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
 import BottomNav from "@/components/BottomNav";
 import CodigoResgate, { type Resgate } from "@/components/CodigoResgate";
@@ -108,7 +109,7 @@ export default function ResgatarPage() {
       </header>
 
       <section className="mt-5 flex flex-col gap-3">
-        {loading && <div className="py-10 text-center text-[13px] text-muted">Carregando…</div>}
+        {loading && <Spinner label="Carregando recompensas…" />}
         {!loading && rewards.length === 0 && (
           <div className="py-10 text-center text-[13px] text-muted">
             Nenhuma recompensa disponível.

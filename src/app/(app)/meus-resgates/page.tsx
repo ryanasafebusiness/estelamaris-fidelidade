@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Close } from "@/components/icons";
 import BottomNav from "@/components/BottomNav";
 import CodigoResgate, { type Resgate } from "@/components/CodigoResgate";
+import Spinner from "@/components/Spinner";
 
 type Redemption = {
   id: string;
@@ -69,7 +70,7 @@ export default function MeusResgatesPage() {
       </header>
 
       <section className="mt-5 flex flex-col gap-2.5">
-        {loading && <div className="py-10 text-center text-[13px] text-muted">Carregando…</div>}
+        {loading && <Spinner label="Carregando…" />}
         {!loading && itens.length === 0 && (
           <div className="py-10 text-center text-[13px] text-muted">
             Você ainda não resgatou nenhuma recompensa.
