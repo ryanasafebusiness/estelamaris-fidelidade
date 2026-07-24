@@ -8,6 +8,7 @@ import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Rece
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
 import ScannerButton from "@/components/ScannerButton";
 import PushOptIn from "@/components/PushOptIn";
+import InstallPWA from "@/components/InstallPWA";
 
 type Movimento = { id: number; tipo: string; pontos: number; descricao: string | null; created_at: string };
 
@@ -106,6 +107,7 @@ export default async function HomePage() {
         </Link>
       </section>
 
+      <InstallPWA />
       <PushOptIn userId={user.id} />
 
       {/* Saldo */}

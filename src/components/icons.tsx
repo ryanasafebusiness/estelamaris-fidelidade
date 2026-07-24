@@ -139,6 +139,23 @@ export function Bell(p: P) {
   );
 }
 
+export function Download(p: P) {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" {...stroke} {...p}>
+      <path d="M12 4v11m0 0-4-4m4 4 4-4M5 19h14" />
+    </svg>
+  );
+}
+
+export function ShareIos(p: P) {
+  return (
+    <svg viewBox="0 0 24 24" width="17" height="17" {...stroke} {...p}>
+      <path d="M12 3v11m0-11 3.5 3.5M12 3 8.5 6.5" />
+      <path d="M6 10v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8" />
+    </svg>
+  );
+}
+
 export function Close(p: P) {
   return (
     <svg viewBox="0 0 24 24" width="17" height="17" {...stroke} strokeWidth={2} {...p}>
