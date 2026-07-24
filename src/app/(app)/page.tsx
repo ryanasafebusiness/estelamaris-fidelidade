@@ -7,6 +7,7 @@ import BottomNav from "@/components/BottomNav";
 import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt } from "@/components/icons";
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
 import ScannerButton from "@/components/ScannerButton";
+import PushOptIn from "@/components/PushOptIn";
 
 type Movimento = { id: number; tipo: string; pontos: number; descricao: string | null; created_at: string };
 
@@ -104,6 +105,8 @@ export default async function HomePage() {
           <Plus />
         </Link>
       </section>
+
+      <PushOptIn userId={user.id} />
 
       {/* Saldo */}
       <section className="mt-6 text-center">
