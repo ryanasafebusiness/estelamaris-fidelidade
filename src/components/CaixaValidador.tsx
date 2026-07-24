@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { caixaLookup, adminMarkRedemptionUsed, type CaixaResult } from "@/app/actions/admin";
+import NotaDesconto, { type NotaDescontoData } from "@/components/caixa/NotaDesconto";
 
 function brl(n: number) {
   return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -50,6 +51,7 @@ export default function CaixaValidador() {
   const [confirmado, setConfirmado] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [historico, setHistorico] = useState<HistItem[]>([]);
+  const [nota, setNota] = useState<NotaDescontoData | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -102,6 +104,14 @@ export default function CaixaValidador() {
     beep(true);
     setConfirmado(true);
     setRes({ ...res, status: "usado" });
+    setNota({
+      codigo: res.codigo,
+      reward: res.reward ?? "Recompensa",
+      valor: res.valor ?? 0,
+      custo: res.custo ?? 0,
+      cliente: res.cliente ?? "—",
+      usadoEm: new Date(),
+    });
   }
 
   function limpar() {
@@ -223,6 +233,16 @@ export default function CaixaValidador() {
             ))}
           </div>
         </div>
+      )}
+
+      {nota && (
+        <NotaDesconto
+          data={nota}
+          onClose={() => {
+            setNota(null);
+            limpar();
+          }}
+        />
       )}
     </div>
   );
