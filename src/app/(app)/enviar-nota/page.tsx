@@ -267,6 +267,19 @@ export default function EnviarNotaPage() {
                 A inteligência artificial está lendo os dados da compra. Pode levar alguns segundos.
               </p>
             </div>
+
+            <div className="mx-2 rounded-2xl border border-blue/15 bg-blue/5 px-4 py-3.5 text-[13px] font-medium leading-relaxed text-ink">
+              Em horários de pico pode demorar um pouco mais. Pode sair desta tela e
+              continuar usando o app tranquilamente — assim que a nota for aprovada,
+              os pontos entram automaticamente no seu saldo.
+            </div>
+
+            <Link
+              href="/"
+              className="w-full max-w-[280px] rounded-2xl bg-ink/5 py-3.5 text-[14px] font-bold text-ink transition-colors hover:bg-ink/10"
+            >
+              Continuar usando o app
+            </Link>
           </div>
         )}
 
