@@ -21,7 +21,7 @@ export default async function CaixaPage() {
     .select("papel")
     .eq("id", user.id)
     .single();
-  if (!profile || profile.papel !== "admin") redirect("/");
+  if (!profile || (profile.papel !== "admin" && profile.papel !== "caixa")) redirect("/");
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[460px] flex-col px-4 pb-8">
@@ -30,9 +30,11 @@ export default async function CaixaPage() {
           <div className="text-[18px] font-extrabold tracking-tight text-ink">Caixa</div>
           <div className="text-[12px] font-semibold text-muted">Validação de resgates</div>
         </div>
-        <Link href="/admin" className="text-[12px] font-bold text-blue">
-          ← Admin
-        </Link>
+        {profile.papel === "admin" && (
+          <Link href="/admin" className="text-[12px] font-bold text-blue">
+            ← Admin
+          </Link>
+        )}
       </header>
 
       <div className="mt-6">

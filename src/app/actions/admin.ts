@@ -28,6 +28,27 @@ async function requireAdmin() {
 }
 
 // ────────────────────────────────────────────────────────────────────
+// Helper: caixa — aceita papel 'caixa' ou 'admin'. Usado só pelas
+// funções de validação/baixa de resgate (a tela do caixa).
+// ────────────────────────────────────────────────────────────────────
+async function requireCaixaOrAdmin() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("papel")
+    .eq("id", user.id)
+    .single();
+  if (!profile || (profile.papel !== "admin" && profile.papel !== "caixa")) redirect("/");
+
+  return user;
+}
+
+// ────────────────────────────────────────────────────────────────────
 // NOTAS — aprovar manualmente
 // ────────────────────────────────────────────────────────────────────
 export async function adminApproveReceipt(
@@ -211,7 +232,7 @@ export async function adminMarkRedemptionUsed(
   _prev: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
-  await requireAdmin();
+  await requireCaixaOrAdmin();
 
   const codigo = String(formData.get("codigo") ?? "").trim().toUpperCase();
   if (!codigo) return { error: "Informe o código." };
@@ -258,7 +279,7 @@ export type CaixaResult = {
 };
 
 export async function caixaLookup(codigo: string): Promise<CaixaResult> {
-  await requireAdmin();
+  await requireCaixaOrAdmin();
   const cod = codigo.trim().toUpperCase();
   if (!cod) return { found: false, error: "Informe o código." };
 
