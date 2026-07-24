@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ativarPush, pushSuportado } from "@/lib/push";
+import { ativarPush, desativarPush, pushSuportado } from "@/lib/push";
 import { Bell } from "@/components/icons";
 
 type Status = "checando" | "sem-suporte" | "bloqueado" | "inativo" | "ativo";
@@ -9,6 +9,7 @@ type Status = "checando" | "sem-suporte" | "bloqueado" | "inativo" | "ativo";
 export default function PushToggle({ userId }: { userId: string }) {
   const [status, setStatus] = useState<Status>("checando");
   const [ativando, setAtivando] = useState(false);
+  const [desativando, setDesativando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,6 +46,18 @@ export default function PushToggle({ userId }: { userId: string }) {
     setStatus("ativo");
   }
 
+  async function desativar() {
+    setDesativando(true);
+    setErro(null);
+    const r = await desativarPush(userId);
+    setDesativando(false);
+    if (!r.ok) {
+      setErro(r.error ?? "Não foi possível desativar.");
+      return;
+    }
+    setStatus("inativo");
+  }
+
   if (status === "checando" || status === "sem-suporte") return null;
 
   return (
@@ -73,9 +86,13 @@ export default function PushToggle({ userId }: { userId: string }) {
         </button>
       )}
       {status === "ativo" && (
-        <span className="shrink-0 rounded-lg bg-emerald-500/15 px-2.5 py-1 text-[11.5px] font-bold text-emerald-600">
-          Ativo ✓
-        </span>
+        <button
+          onClick={desativar}
+          disabled={desativando}
+          className="shrink-0 rounded-xl border border-line bg-white/50 dark:bg-transparent px-3.5 py-2 text-[12.5px] font-bold text-muted transition-colors hover:bg-ink/5 disabled:opacity-50"
+        >
+          {desativando ? "Desativando…" : "Desativar"}
+        </button>
       )}
     </div>
   );

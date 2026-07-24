@@ -48,3 +48,24 @@ export async function ativarPush(userId: string): Promise<{ ok: boolean; error?:
   if (error) return { ok: false, error: error.message };
   return { ok: true };
 }
+
+export async function desativarPush(userId: string): Promise<{ ok: boolean; error?: string }> {
+  if (!pushSuportado()) return { ok: true };
+
+  const registration = await navigator.serviceWorker.getRegistration();
+  const sub = await registration?.pushManager.getSubscription();
+  if (!sub) return { ok: true };
+
+  const endpoint = sub.endpoint;
+  await sub.unsubscribe();
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("push_subscriptions")
+    .delete()
+    .eq("user_id", userId)
+    .eq("endpoint", endpoint);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
