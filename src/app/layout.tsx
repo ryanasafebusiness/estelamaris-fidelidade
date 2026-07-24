@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
-import BootSpinner from "@/components/BootSpinner";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -36,10 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${manrope.variable} h-full antialiased`} suppressHydrationWarning>
-      <body className="min-h-dvh" suppressHydrationWarning>
-        <BootSpinner />
-        {children}
-      </body>
+      <body className="min-h-dvh" suppressHydrationWarning>{children}</body>
     </html>
   );
 }
