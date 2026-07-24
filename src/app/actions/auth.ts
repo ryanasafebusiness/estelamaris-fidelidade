@@ -168,6 +168,12 @@ export async function requireAuthAndProfile() {
     .eq("id", user.id)
     .single();
 
+  // Conta de caixa é interna (não é cliente) — nunca deve cair nas telas do
+  // cliente (Início, Recompensas, etc). Sempre volta pra /caixa.
+  if (profile?.papel === "caixa") {
+    redirect("/caixa");
+  }
+
   if (!profile || !profile.cpf) {
     redirect("/completar-perfil");
   }
