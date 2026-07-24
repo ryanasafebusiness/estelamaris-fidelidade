@@ -1,5 +1,6 @@
 "use server";
 
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -157,16 +158,26 @@ export async function completarPerfil(_prev: FormState, formData: FormData): Pro
 }
 
 // ---------------------------------------------------------------- PROTEÇÃO DE ROTAS
-export async function requireAuthAndProfile() {
+// cache() deduplica dentro da mesma requisição: o layout do grupo (app) chama
+// requireAuthAndProfile() pra proteger a rota, e a página chama de novo pra
+// pegar user/profile — sem isso, seriam 2 idas ao Supabase por carregamento.
+const getAuthAndProfile = cache(async () => {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  if (!user) return { user: null, profile: null };
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single();
+
+  return { user, profile };
+});
+
+export async function requireAuthAndProfile() {
+  const { user, profile } = await getAuthAndProfile();
+  if (!user) redirect("/login");
 
   // Conta de caixa é interna (não é cliente) — nunca deve cair nas telas do
   // cliente (Início, Recompensas, etc). Sempre volta pra /caixa.
