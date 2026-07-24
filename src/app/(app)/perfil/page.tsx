@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAuthAndProfile, logout } from "@/app/actions/auth";
 import PerfilForm from "@/components/auth/PerfilForm";
 import BottomNav from "@/components/BottomNav";
+import PushToggle from "@/components/PushToggle";
 import { Close } from "@/components/icons";
 
 export default async function PerfilPage() {
@@ -35,6 +36,8 @@ export default async function PerfilPage() {
           email={user.email ?? ""}
         />
       </div>
+
+      <PushToggle userId={user.id} />
 
       {profile?.papel === "admin" && (
         <Link
