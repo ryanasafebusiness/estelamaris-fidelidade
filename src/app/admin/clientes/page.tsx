@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { adminAjustarPontos, type AdminFormState } from "@/app/actions/admin";
 import Comprovante, { type ComprovanteData } from "@/components/admin/Comprovante";
 import ReceiptDetailModal from "@/components/admin/ReceiptDetailModal";
 import Spinner from "@/components/Spinner";
@@ -150,6 +151,7 @@ function NivelBadge({ nivel }: { nivel: string }) {
 
 function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () => void }) {
   const supabase = createClient();
+  const [dados, setDados] = useState(cliente);
   const [tab, setTab] = useState<"extrato" | "notas" | "resgates">("extrato");
   const [ledger, setLedger] = useState<Ledger[]>([]);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
@@ -157,6 +159,8 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
   const [loading, setLoading] = useState(true);
   const [comprovante, setComprovante] = useState<ComprovanteData | null>(null);
   const [detalheNota, setDetalheNota] = useState<Receipt | null>(null);
+  const [ajustando, setAjustando] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -192,7 +196,7 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cliente.id]);
+  }, [cliente.id, refreshKey]);
 
   const tabs: { key: typeof tab; label: string }[] = [
     { key: "extrato", label: "Extrato" },
@@ -209,12 +213,12 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="truncate text-[17px] font-extrabold text-ink">
-                  {cliente.nome || "—"}
+                  {dados.nome || "—"}
                 </h3>
-                <NivelBadge nivel={cliente.nivel} />
+                <NivelBadge nivel={dados.nivel} />
               </div>
               <div className="mt-0.5 text-[12px] text-muted">
-                {cliente.cpf || "sem CPF"} · {cliente.telefone || "sem telefone"}
+                {dados.cpf || "sem CPF"} · {dados.telefone || "sem telefone"}
               </div>
             </div>
             <button
@@ -227,15 +231,21 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <div className="rounded-xl bg-ink/[0.03] p-3">
               <div className="text-[11px] font-semibold text-muted">Saldo</div>
-              <div className="text-[18px] font-extrabold text-ink">{fmt(cliente.pontos_saldo)}</div>
+              <div className="text-[18px] font-extrabold text-ink">{fmt(dados.pontos_saldo)}</div>
             </div>
             <div className="rounded-xl bg-ink/[0.03] p-3">
               <div className="text-[11px] font-semibold text-muted">Acumulado (vitalício)</div>
               <div className="text-[18px] font-extrabold text-ink">
-                {fmt(cliente.pontos_acumulados)}
+                {fmt(dados.pontos_acumulados)}
               </div>
             </div>
           </div>
+          <button
+            onClick={() => setAjustando(true)}
+            className="mt-2 w-full rounded-xl border border-line py-2 text-[12.5px] font-bold text-ink transition-colors hover:bg-ink/5"
+          >
+            Ajustar pontos
+          </button>
         </div>
 
         {/* Tabs */}
@@ -352,6 +362,110 @@ function ClienteDetalhe({ cliente, onClose }: { cliente: Cliente; onClose: () =>
           onClose={() => setDetalheNota(null)}
         />
       )}
+
+      {ajustando && (
+        <AjustarPontosModal
+          userId={dados.id}
+          saldoAtual={dados.pontos_saldo}
+          onClose={() => setAjustando(false)}
+          onSucesso={async () => {
+            const { data } = await supabase
+              .from("profiles")
+              .select("nome, cpf, telefone, nivel, pontos_saldo, pontos_acumulados")
+              .eq("id", dados.id)
+              .single();
+            if (data) setDados((d) => ({ ...d, ...data }));
+            setRefreshKey((k) => k + 1);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function AjustarPontosModal({
+  userId,
+  saldoAtual,
+  onClose,
+  onSucesso,
+}: {
+  userId: string;
+  saldoAtual: number;
+  onClose: () => void;
+  onSucesso: () => void;
+}) {
+  const [state, formAction, isPending] = useActionState<AdminFormState, FormData>(
+    adminAjustarPontos,
+    {},
+  );
+
+  useEffect(() => {
+    if (state?.ok) {
+      onSucesso();
+      const t = setTimeout(onClose, 900);
+      return () => clearTimeout(t);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state?.ok]);
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-ink/40 p-3 backdrop-blur-sm sm:items-center">
+      <div className="w-full max-w-[360px] rounded-3xl border border-line bg-white/90 p-6 shadow-glass">
+        <h3 className="text-[17px] font-extrabold text-ink">Ajustar pontos</h3>
+        <p className="mt-1 text-[12.5px] text-muted">Saldo atual: {fmt(saldoAtual)} pts</p>
+
+        {state?.error && (
+          <div className="mt-3 rounded-xl border border-red/20 bg-red/8 px-3 py-2 text-[13px] font-bold text-red">
+            {state.error}
+          </div>
+        )}
+
+        <form action={submeter} className="mt-4 space-y-3">
+          <input type="hidden" name="user_id" value={userId} />
+          <div>
+            <label className="mb-1.5 block text-[12px] font-bold text-ink">
+              Pontos (positivo credita, negativo debita)
+            </label>
+            <input
+              name="pontos"
+              type="number"
+              required
+              value={pontos}
+              onChange={(e) => setPontos(e.target.value)}
+              placeholder="Ex: 50 ou -50"
+              className="w-full rounded-xl border border-line bg-white/50 px-4 py-3 text-[14px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-[12px] font-bold text-ink">Motivo</label>
+            <textarea
+              name="motivo"
+              rows={2}
+              required
+              value={motivo}
+              onChange={(e) => setMotivo(e.target.value)}
+              placeholder="Ex: correção de nota creditada com valor errado"
+              className="w-full resize-none rounded-xl border border-line bg-white/50 px-4 py-3 text-[14px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
+            />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-xl border border-line bg-white/50 py-3 text-[13px] font-bold text-muted transition-colors hover:bg-ink/5"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="flex-1 rounded-xl bg-ink py-3 text-[13px] font-bold text-white transition-colors disabled:opacity-50"
+            >
+              {isPending ? "Ajustando…" : "Confirmar"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

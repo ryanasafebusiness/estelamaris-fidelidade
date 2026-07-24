@@ -55,7 +55,7 @@ export async function adminApproveReceipt(
   _prev: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
-  await requireAdmin();
+  await requireCaixaOrAdmin();
 
   const receiptId = String(formData.get("receipt_id") ?? "");
   const valor = parseFloat(String(formData.get("valor") ?? "0"));
@@ -92,7 +92,7 @@ export async function adminRejectReceipt(
   _prev: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
-  await requireAdmin();
+  await requireCaixaOrAdmin();
 
   const receiptId = String(formData.get("receipt_id") ?? "");
   const motivo = String(formData.get("motivo") ?? "").trim();
@@ -260,6 +260,40 @@ export async function adminMarkRedemptionUsed(
 
   revalidatePath("/admin/resgates");
   return { ok: true, message: `Código ${codigo} marcado como usado.` };
+}
+
+// ────────────────────────────────────────────────────────────────────
+// CLIENTES — ajuste manual de pontos (correção de saldo)
+// ────────────────────────────────────────────────────────────────────
+export async function adminAjustarPontos(
+  _prev: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+
+  const userId = String(formData.get("user_id") ?? "");
+  const pontos = parseInt(String(formData.get("pontos") ?? "0"), 10);
+  const motivo = String(formData.get("motivo") ?? "").trim();
+
+  if (!userId) return { error: "Cliente inválido." };
+  if (!pontos || Number.isNaN(pontos)) return { error: "Informe uma quantidade de pontos diferente de zero." };
+  if (!motivo) return { error: "Informe o motivo do ajuste." };
+
+  const admin = createAdminClient();
+  const { data, error } = await admin.rpc("admin_adjust_points", {
+    p_user: userId,
+    p_pontos: pontos,
+    p_motivo: motivo,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/clientes");
+  const result = data as { novo_saldo: number; novo_acumulado: number; novo_nivel: string };
+  return {
+    ok: true,
+    message: `Ajustado. Novo saldo: ${result.novo_saldo} pts.`,
+  };
 }
 
 // ────────────────────────────────────────────────────────────────────

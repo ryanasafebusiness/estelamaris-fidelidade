@@ -102,18 +102,30 @@ body {
     margin: 0;
     size: 80mm auto;
   }
+
+  html, body {
+    min-height: 0 !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    overflow: hidden !important; /* Ajuda a cortar qualquer conteúdo extra invisível */
+  }
+
   body * {
     visibility: hidden;
   }
+
   #printable-receipt, #printable-receipt * {
     visibility: visible;
   }
+
   #printable-receipt {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
-    max-width: 80mm;
+    max-width: 78mm !important;
     margin: 0;
     padding: 10px;
     background: white !important;
@@ -121,38 +133,38 @@ body {
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
+    font-size: 14pt !important;
   }
+
   /* Esconder botões na impressão */
   #printable-receipt .print-hide {
     display: none !important;
   }
   
-  /* Reset de cores para PB e Fontes Profissionais */
-  #printable-receipt {
-    margin: 0 auto;
-    width: 100% !important;
-    max-width: 78mm !important; /* levemente menor que 80mm p/ evitar corte lateral */
-    font-size: 14pt !important; /* Fonte base maior */
-  }
   #printable-receipt .bg-gradient-to-b {
     background: transparent !important;
     color: black !important;
     border-bottom: 2px dashed black !important;
     padding-bottom: 15px !important;
   }
+
   #printable-receipt * {
     color: black !important;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
     text-shadow: none !important;
     box-shadow: none !important;
+    opacity: 1 !important; /* Remove opacidade para não ficar cinza/pontilhado (qualidade inferior) */
+    letter-spacing: normal !important;
   }
-  /* Força o QR Code e imagens a não ficarem borrados na térmica */
+
+  /* Força o QR Code a ficar nítido */
   #printable-receipt svg, #printable-receipt img {
-    width: 220px !important; 
-    height: 220px !important;
+    width: 180px !important; 
+    height: 180px !important;
     margin: 0 auto;
     shape-rendering: crispEdges;
   }
+
   #printable-receipt span[class*="bg-"] {
     background: transparent !important;
     border: 1px dashed black !important;
