@@ -156,6 +156,15 @@ export function ShareIos(p: P) {
   );
 }
 
+export function Chat(p: P) {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" {...stroke} {...p}>
+      <path d="M4 5h16v11H8l-4 4V5Z" />
+      <path d="M8 10h8M8 13h5" />
+    </svg>
+  );
+}
+
 export function Close(p: P) {
   return (
     <svg viewBox="0 0 24 24" width="17" height="17" {...stroke} strokeWidth={2} {...p}>

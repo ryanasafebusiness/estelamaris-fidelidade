@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuthAndProfile } from "@/app/actions/auth";
 import BottomNav from "@/components/BottomNav";
-import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt, TicketPercent } from "@/components/icons";
+import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt, TicketPercent, Chat } from "@/components/icons";
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
 import ScannerButton from "@/components/ScannerButton";
 import PushOptIn from "@/components/PushOptIn";
@@ -222,6 +222,25 @@ export default async function HomePage() {
           Ver ofertas →
         </span>
       </Link>
+
+      {/* Fazer pedido */}
+      <a
+        href="https://wa.me/553196842179"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="glass mt-3 flex items-center gap-3 rounded-2xl p-4 shadow-soft transition-colors hover:bg-white/50"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue/10 text-blue">
+          <Chat />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[13.5px] font-extrabold text-ink">Fazer pedido</div>
+          <p className="mt-0.5 text-[12px] leading-snug text-muted">
+            Fale com a farmácia pelo WhatsApp: (31) 9684-2179
+          </p>
+        </div>
+        <span className="shrink-0 text-[18px] text-muted">→</span>
+      </a>
 
       <BottomNav current="home" />
     </main>
