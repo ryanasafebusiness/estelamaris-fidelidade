@@ -4,7 +4,7 @@ import { requireAuthAndProfile, logout } from "@/app/actions/auth";
 import PerfilForm from "@/components/auth/PerfilForm";
 import BottomNav from "@/components/BottomNav";
 import PushToggle from "@/components/PushToggle";
-import { Close } from "@/components/icons";
+import { Close, StarSolid } from "@/components/icons";
 
 export default async function PerfilPage() {
   const { user, profile } = await requireAuthAndProfile();
@@ -38,6 +38,24 @@ export default async function PerfilPage() {
       </div>
 
       <PushToggle userId={user.id} />
+
+      <a
+        href="https://g.page/r/CTzpto08eekREBM/review"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="glass mt-4 flex items-center gap-3 rounded-2xl p-4 shadow-soft transition-colors hover:bg-white/50"
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red/10 text-red">
+          <StarSolid />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[13.5px] font-extrabold text-ink">Avalie-nos no Google</div>
+          <p className="mt-0.5 text-[12px] leading-snug text-muted">
+            Sua opinião ajuda outras pessoas a conhecer a farmácia.
+          </p>
+        </div>
+        <span className="shrink-0 text-[18px] text-muted">→</span>
+      </a>
 
       {profile?.papel === "admin" && (
         <Link
