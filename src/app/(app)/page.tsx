@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAuthAndProfile } from "@/app/actions/auth";
 import BottomNav from "@/components/BottomNav";
-import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt } from "@/components/icons";
+import { User, Gear, StarSolid, ArrowUp, Plus, Camera, Swap, History, Dots, Receipt, TicketPercent } from "@/components/icons";
 import { AnimatedList, AnimatedItem } from "@/components/AnimatedList";
 import ScannerButton from "@/components/ScannerButton";
 import PushOptIn from "@/components/PushOptIn";
@@ -35,7 +35,7 @@ export default async function HomePage() {
   inicioMes.setDate(1);
   inicioMes.setHours(0, 0, 0, 0);
 
-  const [{ data: atividadeData }, { data: mesData }] = await Promise.all([
+  const [{ data: atividadeData }, { data: mesData }, { data: configData }] = await Promise.all([
     supabase
       .from("points_ledger")
       .select("id, tipo, pontos, descricao, created_at")
@@ -48,12 +48,28 @@ export default async function HomePage() {
       .eq("user_id", user.id)
       .eq("tipo", "credito")
       .gte("created_at", inicioMes.toISOString()),
+    supabase.from("config").select("limite_prata, limite_ouro").eq("id", true).single(),
   ]);
 
-  const nivel = profile?.nivel ? capitalize(profile.nivel) : "Bronze";
+  const nivelRaw = profile?.nivel ?? "bronze";
+  const nivel = capitalize(nivelRaw);
   const saldo = profile?.pontos_saldo ?? 0;
+  const acumulado = profile?.pontos_acumulados ?? 0;
   const esteMes = (mesData ?? []).reduce((s: number, r: { pontos: number }) => s + r.pontos, 0);
   const atividade = (atividadeData ?? []) as Movimento[];
+
+  const limitePrata = configData?.limite_prata ?? 500;
+  const limiteOuro = configData?.limite_ouro ?? 2000;
+
+  let progressoNivel = 100;
+  let faltamTexto = "Nível máximo atingido";
+  if (nivelRaw === "bronze") {
+    progressoNivel = Math.min(100, (acumulado / limitePrata) * 100);
+    faltamTexto = `Faltam ${fmtPts(Math.max(limitePrata - acumulado, 0))} pts para Prata`;
+  } else if (nivelRaw === "prata") {
+    progressoNivel = Math.min(100, ((acumulado - limitePrata) / (limiteOuro - limitePrata)) * 100);
+    faltamTexto = `Faltam ${fmtPts(Math.max(limiteOuro - acumulado, 0))} pts para Ouro`;
+  }
 
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-[420px] flex-col px-4 pb-2">
@@ -78,14 +94,27 @@ export default async function HomePage() {
 
       {/* Pílulas: nível / este mês / enviar */}
       <section className="mt-3.5 flex gap-2.5">
-        <div className="glass flex flex-1 items-center gap-2.5 rounded-2xl px-3 py-2.5 shadow-soft">
-          <span className="flex h-[26px] w-[26px] items-center justify-center rounded-full bg-red/10 text-red">
-            <StarSolid />
-          </span>
-          <div>
-            <div className="text-[10.5px] font-semibold leading-none text-muted">Nível</div>
-            <div className="mt-0.5 text-[13.5px] font-extrabold leading-tight">{nivel}</div>
+        <div className="glass flex flex-1 flex-col gap-1.5 rounded-2xl px-3 py-2.5 shadow-soft">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-red/10 text-red">
+              <StarSolid />
+            </span>
+            <div className="min-w-0">
+              <div className="text-[10.5px] font-semibold leading-none text-muted">Seu nível</div>
+              <div className="mt-0.5 text-[13.5px] font-extrabold leading-tight">{nivel}</div>
+            </div>
           </div>
+          {nivelRaw !== "ouro" && (
+            <div>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-ink/5">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-red to-red-deep transition-all"
+                  style={{ width: `${progressoNivel}%` }}
+                />
+              </div>
+              <div className="mt-1 truncate text-[9.5px] font-semibold text-muted">{faltamTexto}</div>
+            </div>
+          )}
         </div>
 
         <div className="glass flex flex-1 items-center gap-2.5 rounded-2xl px-3 py-2.5 shadow-soft">
@@ -111,11 +140,23 @@ export default async function HomePage() {
       <PushOptIn userId={user.id} />
 
       {/* Saldo */}
-      <section className="mt-6 text-center">
-        <div className="text-[12.5px] font-semibold tracking-wide text-muted">Saldo de pontos</div>
-        <div className="mt-1.5 text-[52px] font-extrabold leading-none tracking-tighter">
-          {fmtPts(saldo)}
-          <span className="ml-1.5 text-[20px] font-bold tracking-normal text-muted">pts</span>
+      <section className="glass relative mt-6 overflow-hidden rounded-[26px] p-5 shadow-glass">
+        <div className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 rounded-full bg-red/15 blur-2xl" />
+        <div className="relative flex items-center justify-between gap-3">
+          <div>
+            <div className="text-[12.5px] font-semibold tracking-wide text-muted">Saldo de pontos</div>
+            <div className="mt-1.5 text-[44px] font-extrabold leading-none tracking-tighter text-ink">
+              {fmtPts(saldo)}
+              <span className="ml-1.5 text-[18px] font-bold tracking-normal text-muted">pts</span>
+            </div>
+          </div>
+          <Image
+            src="/logo-mark.png"
+            alt=""
+            width={84}
+            height={84}
+            className="shrink-0 rounded-full shadow-red"
+          />
         </div>
       </section>
 
@@ -157,6 +198,30 @@ export default async function HomePage() {
           )}
         </AnimatedList>
       </section>
+
+      {/* Ofertas */}
+      <Link
+        href="/recompensas"
+        className="relative mt-6 block overflow-hidden rounded-[24px] bg-gradient-to-br from-ink to-[#0b1226] p-5 text-white shadow-glass transition-transform hover:-translate-y-0.5"
+      >
+        <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-red/25 blur-2xl" />
+        <div className="relative flex items-center gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-red">
+            <TicketPercent />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[15px] font-extrabold leading-tight">
+              Ofertas exclusivas para você
+            </div>
+            <p className="mt-1 text-[12px] leading-snug text-white/70">
+              Troque seus pontos por descontos especiais quando quiser.
+            </p>
+          </div>
+        </div>
+        <span className="relative mt-4 inline-block rounded-full bg-white px-4 py-2 text-[12.5px] font-extrabold text-ink">
+          Ver ofertas →
+        </span>
+      </Link>
 
       <BottomNav current="home" />
     </main>

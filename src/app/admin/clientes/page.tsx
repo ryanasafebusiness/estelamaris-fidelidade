@@ -420,7 +420,7 @@ function AjustarPontosModal({
           </div>
         )}
 
-        <form action={submeter} className="mt-4 space-y-3">
+        <form action={formAction} className="mt-4 space-y-3">
           <input type="hidden" name="user_id" value={userId} />
           <div>
             <label className="mb-1.5 block text-[12px] font-bold text-ink">
@@ -430,8 +430,6 @@ function AjustarPontosModal({
               name="pontos"
               type="number"
               required
-              value={pontos}
-              onChange={(e) => setPontos(e.target.value)}
               placeholder="Ex: 50 ou -50"
               className="w-full rounded-xl border border-line bg-white/50 px-4 py-3 text-[14px] font-bold text-ink outline-none focus:border-blue focus:ring-2 focus:ring-blue/20"
             />
@@ -442,8 +440,6 @@ function AjustarPontosModal({
               name="motivo"
               rows={2}
               required
-              value={motivo}
-              onChange={(e) => setMotivo(e.target.value)}
               placeholder="Ex: correção de nota creditada com valor errado"
               className="w-full resize-none rounded-xl border border-line bg-white/50 px-4 py-3 text-[14px] font-medium text-ink outline-none placeholder:text-muted focus:border-blue focus:ring-2 focus:ring-blue/20"
             />
